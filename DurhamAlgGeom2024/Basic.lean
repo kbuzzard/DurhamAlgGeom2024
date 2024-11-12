@@ -1,1 +1,1 @@
-def hello := "world"
+import Mathlib -- check mathlib works
