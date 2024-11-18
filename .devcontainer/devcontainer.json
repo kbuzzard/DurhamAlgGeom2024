@@ -5,7 +5,7 @@
     "dockerfile": "Dockerfile"
   },
 
-  "onCreateCommand": "echo \"Downloading the Lean 4 mathematical library...\" && lake exe cache get! && echo \"Finished setup! Open a file using the Explorer in the top-left of your screen.\"",
+  "onCreateCommand": "echo \"Downloading the Lean 4 mathematical library...\" && lake exe cache get! && lake build +DurhamAlgGeom2024.DurhamAlgGeom2024 && echo \"Finished setup! Open a file using the Explorer in the top-left of your screen.\"",
 
   "customizations": {
     "vscode" : {
