@@ -54,7 +54,7 @@ variable [Algebra R₀ K] -- the diagonal
   -- top triangle commutes
   [IsScalarTower R₀ (Away 𝒜 f) K]
 
-theorem projective_implies_proper : ∃ (x₀ : S) (e : ℕ) (he : 0 < e) (h₀ : x₀ ∈ 𝒜 e)
+theorem projective_implies_proper_aux : ∃ (x₀ : S) (e : ℕ) (he : 0 < e) (h₀ : x₀ ∈ 𝒜 e)
     (φ' : Away 𝒜 x₀ →+* A), φ'.comp (algebraMap R₀ (Away 𝒜 x₀)) = algebraMap R₀ A := by
   sorry
 

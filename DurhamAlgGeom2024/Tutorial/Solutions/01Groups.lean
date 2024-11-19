@@ -22,3 +22,17 @@ example (h : ∀ a : G, a * a = 1) : ∀ x y : G, x * y = y * x := by
   rw [mul_inv_rev] -- found with `simp?`
   -- use x⁻¹ = x and y⁻¹ = y
   rw [eq_inv (h x), eq_inv (h y)]
+
+-- Solution given in the lecture
+example (h : ∀ a : G, a * a = 1) :
+    ∀ x y : G, x * y = y * x := by
+  -- let x and y be arbitrary
+  intro x y
+  -- xy=1xy1=yyxyxx=y(yx)(yx)x
+  calc x * y = 1 * x * y * 1 := by group
+       _     = (y * y) * (x * y) * (x * x) := by
+               rw [h x, h y]
+               repeat rw [mul_assoc]
+       _     = y * ((y * x) * (y * x)) * x := by simp [mul_assoc]
+       _     = y * 1 * x := by rw [h (y * x)]
+       _     = y * x := by simp only [mul_one]
