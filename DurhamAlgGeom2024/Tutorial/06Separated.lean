@@ -1,4 +1,5 @@
 import Mathlib
+set_option linter.style.header false
 
 noncomputable section statement
 
@@ -16,13 +17,18 @@ variable {g : S} (hg : g ∈ 𝒜 e)
 
 -- let's not have to type HomogeneousLocalization everywhere
 open HomogeneousLocalization
+open Submonoid (powers)
 
 -- Let's define a map from S_(f) to S_(fg)
+variable (x : S) (hx : x = f * g)
 
-def srtrts (x : S) (hx : x = f * g) :
-    Away 𝒜 f →+* Away 𝒜 x where
-  toFun := _
-  map_add' := sorry
-  map_mul' := sorry
-  map_one' := sorry
-  map_zero' := sorry
+#check Localization.awayMap
+
+lemma lemma1 : IsUnit ((algebraMap S (Localization.Away x)) f) := sorry
+
+def map1 : Away 𝒜 f →+* Localization.Away x :=
+  (Localization.awayLift (algebraMap S _) _ (lemma1 ..)).comp
+    (algebraMap (Away 𝒜 f) (Localization.Away f))
+
+lemma lemma2 : Set.range (map1 𝒜 (f := f) x) ⊆ Set.range (val (𝒜 := 𝒜)) := by
+  sorry
