@@ -20,15 +20,19 @@ open HomogeneousLocalization
 open Submonoid (powers)
 
 -- Let's define a map from S_(f) to S_(fg)
-variable (x : S) (hx : x = f * g)
+variable {x : S} (hx : x = f * g)
 
-#check Localization.awayMap
+include hx
+lemma lemma1 : IsUnit ((algebraMap S (Localization.Away x)) f) := by
+  rw [isUnit_iff_exists_inv]
+  use Localization.mk g ⟨f*g, 1, by simp [hx]⟩
+  rw [←Algebra.smul_def, Localization.smul_mk]
+  exact Localization.mk_self ⟨f*g, _⟩
 
-lemma lemma1 : IsUnit ((algebraMap S (Localization.Away x)) f) := sorry
 
 def map1 : Away 𝒜 f →+* Localization.Away x :=
-  (Localization.awayLift (algebraMap S _) _ (lemma1 ..)).comp
+  (Localization.awayLift (algebraMap S _) _ (lemma1 hx)).comp
     (algebraMap (Away 𝒜 f) (Localization.Away f))
 
-lemma lemma2 : Set.range (map1 𝒜 (f := f) x) ⊆ Set.range (val (𝒜 := 𝒜)) := by
+lemma lemma2 : Set.range (map1 𝒜 (f := f) hx) ⊆ Set.range (val (𝒜 := 𝒜)) := by
   sorry
