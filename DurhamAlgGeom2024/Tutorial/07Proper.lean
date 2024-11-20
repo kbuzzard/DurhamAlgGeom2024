@@ -1,5 +1,5 @@
 import Mathlib
-
+import DurhamAlgGeom2024.Tutorial.«06Separated»
 section missing_instance
 /-
 
@@ -53,7 +53,7 @@ example : ∃ (F : Set S),
 theorem FG_by_homogeneous : ∃ (F : Set S),
     (F.Finite) ∧
     (Algebra.adjoin (𝒜 0) F = ⊤) ∧
-    (∀ f ∈ F, ∃ n : ℕ, f ∈ 𝒜 n) := by
+    (∀ f ∈ F, ∃ n : ℕ, 0 < n ∧ f ∈ 𝒜 n) := by
   sorry
 
 open HomogeneousLocalization
@@ -87,17 +87,15 @@ The diagram in the question
                   φ₀
 -/
 
-variable [Algebra (𝒜 0) A] -- φ
-variable [Algebra (Away 𝒜 f) K] -- φ₀
-variable [Algebra (𝒜 0) K] -- the diagonal
-  -- bottom triangle commutes
-  [IsScalarTower (𝒜 0) A K]
-  -- top triangle commutes
-  -- **TODO** need to fix this
-  --[IsScalarTower (𝒜 0) (Away 𝒜 f) K]
+variable (φ₀ : (𝒜 0) →+* A)
+variable (φ : (Away 𝒜 f) →+* K)
+variable (hcomm : (algebraMap A K).comp φ₀ = φ.comp (fromZeroRingHom 𝒜 _))
 
-theorem projective_implies_proper_aux : ∃ (x₀ : S) (e : ℕ) (he : 0 < e) (h₀ : x₀ ∈ 𝒜 e)
-    (φ' : Away 𝒜 x₀ →+* A), φ'.comp (algebraMap R₀ (Away 𝒜 x₀)) = algebraMap R₀ A := by
+theorem projective_implies_proper_aux : ∃ (x₀ : S) (e : ℕ) (he : 0 < e)
+    (h₀ : x₀ ∈ 𝒜 e)
+    (φ' : Away 𝒜 (f * x₀) →+* K),
+    (φ'.comp (map2 𝒜 h₀ rfl) = φ) ∧
+    Set.range (φ'.comp (map2 𝒜 hf (mul_comm f x₀))) ⊆ Set.range (algebraMap A K) :=
   sorry
 
 end statement
