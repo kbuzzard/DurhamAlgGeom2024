@@ -194,16 +194,40 @@ lemma tensormap_surjective (hd:d ≠0) : Function.Surjective (tensormap 𝒜 hf 
   obtain ⟨⟨n, ⟨a, ha⟩, ⟨b, hb'⟩, ⟨j, (rfl : _ = b)⟩⟩, rfl⟩ := mk_surjective z
   dsimp at hb'
   dsimp
+  by_cases hfg:(f * g) ^ j = 0
+  · use 0
+    have := HomogeneousLocalization.subsingleton 𝒜 (x:= Submonoid.powers (f*g)) (by
+      rw [← hfg]
+      use j)
+    apply this.elim
+  have : n = j*(d+e) := by
+    apply DirectSum.degree_eq_of_mem_mem 𝒜 hb'
+    convert SetLike.pow_mem_graded _ _ using 2
+    infer_instance
+    exact SetLike.mul_mem_graded hf hg
+    exact hfg
   let x0 : NumDenSameDeg 𝒜 (.powers f) := {
     deg := j*(d*(e+1))
-    num := ⟨a*g^(j*(d-1)),sorry⟩
-    den := ⟨f^(j*(e+1)),sorry⟩
+    num := ⟨a*g^(j*(d-1)), by
+      convert SetLike.mul_mem_graded ha ( SetLike.pow_mem_graded _ hg) using 2
+      rw [this]
+      cases d
+      contradiction
+      simp
+      ring⟩
+    den := ⟨f^(j*(e+1)), by
+      convert SetLike.pow_mem_graded _ hf using 2
+      ring⟩
     den_mem := ⟨_,rfl⟩
   }
   let y0 : NumDenSameDeg 𝒜 (.powers g) := {
     deg := j*(d*e)
-    num := ⟨f^(j*e),sorry⟩
-    den := ⟨g^(j*d),sorry⟩
+    num := ⟨f^(j*e),by
+      convert SetLike.pow_mem_graded _ hf using 2
+      ring⟩
+    den := ⟨g^(j*d),by
+      convert SetLike.pow_mem_graded _ hg using 2
+      ring⟩
     den_mem := ⟨_,rfl⟩
   }
   use (mk x0 ⊗ₜ[ℤ] mk y0)
