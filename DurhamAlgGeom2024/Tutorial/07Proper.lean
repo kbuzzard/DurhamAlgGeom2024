@@ -50,10 +50,9 @@ example : ∃ (F : Set S),
   exact ⟨F, F.finite_toSet, hF⟩
 
 -- But we need homogeneous generators.
-theorem FG_by_homogeneous : ∃ (F : Set S),
-    (F.Finite) ∧
-    (Algebra.adjoin (𝒜 0) F = ⊤) ∧
-    (∀ f ∈ F, ∃ n : ℕ, 0 < n ∧ f ∈ 𝒜 n) := by
+theorem FG_by_homogeneous : ∃ (ι : Type) (x : ι → S) (_ : Fintype ι),
+    (Algebra.adjoin (𝒜 0) (Set.range x) = ⊤) ∧
+    (∀ i : ι, ∃ n : ℕ, 0 < n ∧ x i ∈ 𝒜 n) := by
   sorry
 
 open HomogeneousLocalization
@@ -95,7 +94,31 @@ theorem projective_implies_proper_aux : ∃ (x₀ : S) (e : ℕ) (he : 0 < e)
     (h₀ : x₀ ∈ 𝒜 e)
     (φ' : Away 𝒜 (f * x₀) →+* K),
     (φ'.comp (map2 𝒜 h₀ rfl) = φ) ∧
-    Set.range (φ'.comp (map2 𝒜 hf (mul_comm f x₀))) ⊆ Set.range (algebraMap A K) :=
-  sorry
+    Set.range (φ'.comp (map2 𝒜 hf (mul_comm f x₀))) ⊆ Set.range (algebraMap A K) := by
+  classical
+  obtain ⟨ι, x, h1, h2, h3⟩:= FG_by_homogeneous 𝒜
+  choose di hdi hxdi using h3
+  let ψ: (i : ι) → ValuationRing.ValueGroup A K :=
+    fun i ↦ ValuationRing.valuation A K <| (φ (mk {
+      deg := d * di i
+      num := ⟨x i ^d, SetLike.pow_mem_graded d (hxdi i) ⟩
+      den := ⟨f^(di i) , mul_comm d (di i) ▸ SetLike.pow_mem_graded (di i) ( hf)⟩
+      den_mem := ⟨_, rfl⟩
+    }))^ ∏ j in Finset.univ.erase i, di j
+  cases isEmpty_or_nonempty ι
+  · sorry
+  · set Kmax := Finset.max' (Finset.image ψ Finset.univ) sorry
+    have : Kmax ∈ _ := Finset.max'_mem (Finset.image ψ Finset.univ) sorry
+    simp only [Finset.mem_image, Finset.mem_univ, true_and] at this
+    obtain ⟨i0, hi0⟩ := this
+    have hi0 : ∀ (j : ι), ψ j ≤ ψ i0 := by
+      intro j
+      rw [hi0]
+      exact Finset.le_max' (Finset.image ψ Finset.univ) (ψ j) (by simp)
+    use x i0
+    use di i0
+    use hdi i0
+    use hxdi i0
+    sorry
 
 end statement
