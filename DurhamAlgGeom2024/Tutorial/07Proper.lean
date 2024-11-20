@@ -50,9 +50,42 @@ example : ∃ (F : Set S),
   exact ⟨F, F.finite_toSet, hF⟩
 
 -- But we need homogeneous generators.
+-- This preliminary version gives homogeneous generators
+-- but allows generators in degree 0
+theorem FG_by_homogeneous₀ : ∃ (ι₀ : Type) (x : ι₀ → S) (_ : Fintype ι₀),
+    (Algebra.adjoin (𝒜 0) (Set.range x) = ⊤) ∧
+    (∀ i : ι₀, ∃ n : ℕ, x i ∈ 𝒜 n) := by
+  classical
+  -- S is finitely-generated
+  obtain ⟨F, hF⟩ := Algebra.FiniteType.out (R := 𝒜 0) (A := S)
+  -- ι₀ is pairs (s,n) such that s ∈ F and sₙ ≠ 0
+  let ι₀ := Σ (x : F), (DirectSum.decompose 𝒜 x.1).support
+  -- x(s,n) is sₙ
+  let x (i : ι₀) : S := ((DirectSum.decompose 𝒜) i.1 i.2).1
+  -- This should work
+  refine ⟨ι₀, x, inferInstance, ?_, ?_⟩
+  · rw [← top_le_iff, ← hF]
+    apply Algebra.adjoin_le
+    -- STP that if s ∈ F then s ∈ 𝒜₀[tₘ] for t running through F
+    intro s hs
+    -- Well s = ∑ₙ sₙ
+    rw [← DirectSum.sum_support_decompose 𝒜 s]
+    -- so it suffices that ∀ n, sₙ ∈ 𝒜₀[tₘ]
+    apply sum_mem
+    intro n hn
+    -- so it suffices that sₙ is one of the tₘ
+    apply Algebra.subset_adjoin
+    -- but this is obvious
+    use ⟨⟨s, hs⟩, n, hn⟩
+  · rintro ⟨f, nf⟩
+    use nf
+    exact ((DirectSum.decompose 𝒜) f nf).2
+
 theorem FG_by_homogeneous : ∃ (ι : Type) (x : ι → S) (_ : Fintype ι),
     (Algebra.adjoin (𝒜 0) (Set.range x) = ⊤) ∧
     (∀ i : ι, ∃ n : ℕ, 0 < n ∧ x i ∈ 𝒜 n) := by
+  -- this should now be easy
+  -- ι = {i : ι₀ | nᵢ ≠ 0}
   sorry
 
 open HomogeneousLocalization
@@ -107,8 +140,9 @@ theorem projective_implies_proper_aux : ∃ (x₀ : S) (e : ℕ) (he : 0 < e)
     }))^ ∏ j in Finset.univ.erase i, di j
   cases isEmpty_or_nonempty ι
   · sorry
-  · set Kmax := Finset.max' (Finset.image ψ Finset.univ) sorry
-    have : Kmax ∈ _ := Finset.max'_mem (Finset.image ψ Finset.univ) sorry
+  · have foo : (Finset.image ψ Finset.univ).Nonempty := by rwa [Finset.image_nonempty, Finset.univ_nonempty_iff]
+    set Kmax := Finset.max' (Finset.image ψ Finset.univ) foo
+    have : Kmax ∈ _ := Finset.max'_mem (Finset.image ψ Finset.univ) foo
     simp only [Finset.mem_image, Finset.mem_univ, true_and] at this
     obtain ⟨i0, hi0⟩ := this
     have hi0 : ∀ (j : ι), ψ j ≤ ψ i0 := by
