@@ -185,20 +185,11 @@ omit hx -- no longer needed
 
 open scoped TensorProduct
 
-def samething {A B : Type} [CommRing A] [CommRing B] : (A →ₐ[ℤ] B) ≃ (A →+* B) where
-  toFun φ := φ
-  invFun ψ := {
-    __ := ψ
-    commutes' := fun z ↦ by simp
-  }
-  left_inv φ := rfl
-  right_inv ψ := rfl
-
-def tensormap : Away 𝒜 f ⊗[ℤ] Away 𝒜 g →+* Away 𝒜 (f * g) := samething <|
-  Algebra.TensorProduct.lift
-    (samething.symm <| map2 𝒜 hg rfl)
-    (samething.symm <| map2 𝒜 hf <| mul_comm f g)
-    (by intros; apply Commute.all)
+def tensormap : Away 𝒜 f ⊗[ℤ] Away 𝒜 g →+* Away 𝒜 (f * g) :=
+  (Algebra.TensorProduct.lift
+    (RingHom.toIntAlgHom <| map2 𝒜 hg rfl)
+    (RingHom.toIntAlgHom <| map2 𝒜 hf <| mul_comm f g)
+    (by intros; apply Commute.all)).toRingHom
 
 -- part (2)
 lemma tensormap_surjective : Function.Surjective (tensormap 𝒜 hf hg) := by
