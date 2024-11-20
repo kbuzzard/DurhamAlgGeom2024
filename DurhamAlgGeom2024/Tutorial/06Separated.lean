@@ -25,7 +25,7 @@ subring `S_{(f)}` to `S_{(fg)}`. Our proof is slightly complicated by
 the fact that `S_{(f)}` is not actually *defined* as a subring of `S[1/f]` in Lean,
 but there is an injective map between the two rings so it's OK.
 
-2) [TODO] From (1) we can deduce that there's a bilinear map `S_{(f)} × S_{(g)} → S_{(fg)}`
+2) From (1) we can deduce that there's a bilinear map `S_{(f)} × S_{(g)} → S_{(fg)}`
 and hence a map `S_{(f)} ⊗[ℤ] S_{(g)} → S_{(fg)}`. We prove that this map
 is surjective.
 -/
