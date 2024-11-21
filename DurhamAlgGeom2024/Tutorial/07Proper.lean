@@ -185,22 +185,41 @@ lemma ι_nonempty (hd : 0 < d) (ι : Type) (x : ι → S)
   rw [← hg]
   exact hg1
 
-theorem projective_implies_proper_aux (hd : 0 < d) : ∃ (x₀ : S) (e : ℕ) (he : 0 < e)
+/-
+projective_implies_proper_aux {R₀ S : Type} [CommRing R₀] [CommRing S] [Algebra R₀ S] (𝒜 : ℕ → Submodule R₀ S)
+  [GradedAlgebra 𝒜] [Algebra.FiniteType (↥(𝒜 0)) S] {d : ℕ} {f : S} (hf : f ∈ 𝒜 d) {A : Type} [CommRing A] [IsDomain A]
+  [ValuationRing A] {K : Type} [Field K] [Algebra A K] [IsFractionRing A K] (φ : Away 𝒜 f →+* K) (hd : 0 < d) :
+  ∃ x₀ e,
+    ∃ (_ : 0 < e) (h₀ : x₀ ∈ 𝒜 e),
+      ∃ φ', φ'.comp (map2 𝒜 h₀ ⋯) = φ ∧ Set.range ⇑(φ'.comp (map2 𝒜 hf ⋯)) ⊆ Set.range ⇑(algebraMap A K)
+      -/
+omit f φ [Algebra.FiniteType (↥(𝒜 0)) S]
+
+-- (∀ i : ι, ∃ n : ℕ, 0 < n ∧ x i ∈ 𝒜 n)
+
+theorem projective_implies_proper_aux
+    (ι : Type) [Fintype ι] (x : ι → S)
+    (h2 : Algebra.adjoin (↥(𝒜 0)) (Set.range x) = (⊤ : Subalgebra (𝒜 0) S))
+    (j : ι)
+    (φ : Away 𝒜 (x j) →+* K)
+    (d : ι → ℕ)
+    (hdi : ∀ i, 0 < d i)
+    (hxdi : ∀ i, x i ∈ 𝒜 (d i))
+    :
+    ∃ (x₀ : S) (e : ℕ) (he : 0 < e)
     (h₀ : x₀ ∈ 𝒜 e)
-    (φ' : Away 𝒜 (f * x₀) →+* K),
+    (φ' : Away 𝒜 ((x j) * x₀) →+* K),
     (φ'.comp (map2 𝒜 h₀ rfl) = φ) ∧
-    Set.range (φ'.comp (map2 𝒜 hf (mul_comm f x₀))) ⊆ Set.range (algebraMap A K) := by
+    Set.range (φ'.comp (map2 𝒜 (hxdi j) (mul_comm (x j) x₀))) ⊆ Set.range (algebraMap A K) := by
   classical
-  obtain ⟨ι, x, h1, h2, h3⟩:= FG_by_homogeneous 𝒜
-  choose di hdi hxdi using h3
   let ψ: (i : ι) → ValuationRing.ValueGroup A K :=
     fun i ↦ ValuationRing.valuation A K <| (φ (mk {
-      deg := d * di i
-      num := ⟨x i ^d, SetLike.pow_mem_graded d (hxdi i) ⟩
-      den := ⟨f^(di i) , mul_comm d (di i) ▸ SetLike.pow_mem_graded (di i) ( hf)⟩
+      deg := (d j) * d i
+      num := ⟨x i ^ d j, SetLike.pow_mem_graded (d j) (hxdi i) ⟩
+      den := ⟨(x j)^(d i) , mul_comm (d j) (d i) ▸ SetLike.pow_mem_graded (d i) ( hxdi j)⟩
       den_mem := ⟨_, rfl⟩
-    }))^ ∏ j in Finset.univ.erase i, di j
-  have hιnonempty : Nonempty ι := by exact ι_nonempty 𝒜 hd ι x hf φ h2
+    }))^ ∏ k in Finset.univ.erase i, d k
+  have hιnonempty : Nonempty ι := by exact ι_nonempty 𝒜 (hdi j) ι x (hxdi j) φ h2
   have foo : (Finset.image ψ Finset.univ).Nonempty := by rwa [Finset.image_nonempty, Finset.univ_nonempty_iff]
   set Kmax := Finset.max' (Finset.image ψ Finset.univ) foo
   have : Kmax ∈ _ := Finset.max'_mem (Finset.image ψ Finset.univ) foo
@@ -210,7 +229,31 @@ theorem projective_implies_proper_aux (hd : 0 < d) : ∃ (x₀ : S) (e : ℕ) (h
     intro j
     rw [hi0]
     exact Finset.le_max' (Finset.image ψ Finset.univ) (ψ j) (by simp)
-  use x i0, di i0, hdi i0, hxdi i0
+  use x i0, d i0, hdi i0, hxdi i0
+  have hKmax : Kmax ≠ 0 := by
+    intro hKmax
+    unfold Kmax at hKmax
+    have : ∀ i : ι, ψ i ≤ 0 := by
+      intro i
+      rw [← hKmax]
+      apply Finset.le_max'
+      simp
+    have this : ∀ i, ψ i = 0 := by
+      intro i
+      specialize this i
+      exact le_zero_iff.mp this
+    unfold ψ at this
+    simp at this
+    specialize this j
+    suffices φ 1 = 0 by
+      simp at this
+    convert this.1
+    ext
+    simp
+    symm
+    convert Localization.mk_self _
+    rfl
+  have hKmax : 0 < Kmax := zero_lt_iff.mpr hKmax
   sorry
 
 end statement
