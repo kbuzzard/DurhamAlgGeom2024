@@ -127,6 +127,7 @@ S[1/f] -----------------> S[1/(fg)]
 def map1 : Away 𝒜 f →+* Localization.Away x :=
   (Localization.awayLift (algebraMap S _) _ (lemma1 hx)).comp
     (algebraMap (Away 𝒜 f) (Localization.Away f))
+
 -- this could be golfed/tidied
 include hg
 lemma lemma2 : Set.range (map1 𝒜 (f := f) hx) ⊆ Set.range (val (𝒜 := 𝒜)) := by
