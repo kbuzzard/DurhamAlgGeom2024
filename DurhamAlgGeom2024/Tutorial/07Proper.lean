@@ -438,6 +438,11 @@ theorem projective_implies_proper_aux
       rw [← map_pow, ← map_mul]
       congr
       -- Kevin is working on this
+      ext
+      rw [val_mul]
+      rw [val_map2_mk 𝒜]
+      simp only [val_pow]
+      let foo : Algebra (Away 𝒜 (x j)) (Away 𝒜 (x j * x i0)) := inferInstance
       sorry
     rw [map_div₀]
     rw [div_le_iff₀ sorry, one_mul]
