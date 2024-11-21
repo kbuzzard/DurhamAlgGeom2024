@@ -484,8 +484,15 @@ theorem projective_implies_proper_aux
             · intro _
               simp
               ring
-          · simp only [ψ, ← map_pow, ← map_prod, ← map_mul]
-            congr 4
+          · apply le_of_eq
+            simp only [ψ, ← map_pow, ← map_prod, ← map_mul]
+            congr 2
+            rw [← pow_mul, mul_assoc, ← mul_assoc,
+              Finset.prod_erase_mul Finset.univ d (h := Finset.mem_univ _),
+              mul_left_comm, pow_mul]
+            congr 1
+            · ext; simp
+            · exact mul_comm _ _
     | zero => simp
     | add x y hx hy hhx hhy =>
       simp only [RingHom.coe_comp, Function.comp_apply, map_add, ge_iff_le]
