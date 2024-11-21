@@ -449,8 +449,6 @@ theorem projective_implies_proper_aux
       rw [Localization.mk_pow, Localization.mk_mul, Localization.mk_eq_mk_iff, Localization.r_iff_exists]
       use 1
       simp only [OneMemClass.coe_one, one_mul, SubmonoidClass.mk_pow, Submonoid.mk_mul_mk]
-      -- Kevin is working on the below sorry
-
       obtain h | ⟨m, hm⟩ := useful (d j)
       · exfalso
         exact (hdi j).ne' h
@@ -529,6 +527,7 @@ theorem projective_implies_proper_aux
     -- and stuff in A has valuation <= 1. This involves a tricky diagram
     -- chase in practice though. Justus was thinking about this sorry
     rw [Algebra.smul_def]
+    -- Kevin is working on this sorry
     sorry
 
 end statement
