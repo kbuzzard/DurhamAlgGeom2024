@@ -318,7 +318,6 @@ theorem Span_monomial_eq_top (f : S) (d : ℕ) (hf : f ∈ 𝒜 d) (ι : Type) (
     | h_add =>
       simp_all [mul_add]
 
-#check isUnit_iff_ne_zero
 theorem projective_implies_proper_aux
     (ι : Type) [Fintype ι] (x : ι → S)
     (h2 : Algebra.adjoin (↥(𝒜 0)) (Set.range x) = (⊤ : Subalgebra (𝒜 0) S))
@@ -435,10 +434,15 @@ theorem projective_implies_proper_aux
       convert this
       -- proof: multiply it out
       rw [eq_div_iff <| by rw [←isUnit_iff_ne_zero]; exact IsUnit.pow _ foounit]
+      rw [← hφ', ← hφ']
+      simp only [RingHom.coe_comp, Function.comp_apply]
+      rw [← map_pow, ← map_mul]
+      congr
       sorry
     rw [map_div₀]
     rw [div_le_iff₀ sorry, one_mul]
     rw [← pow_le_pow_iff_left₀ (n := d j) sorry sorry sorry]
+    -- Andrew is working on this
     sorry
   | zero => simp
   | add x y hx hy hhx hhy =>
