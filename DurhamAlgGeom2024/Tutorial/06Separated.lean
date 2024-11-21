@@ -171,6 +171,21 @@ lemma map2_spec' (z) :
     lemma2 𝒜 hg hx
   exact lift_aux_spec foo z
 
+lemma map2_spec_mk (z) :
+    (map2 𝒜 hg hx z).val = map1 𝒜 hx z := by
+  have foo : Set.range ⇑(map1 𝒜 hx) ⊆ Set.range ⇑(algebraMap (Away 𝒜 x) (Localization.Away x)) :=
+    lemma2 𝒜 hg hx
+  exact lift_aux_spec foo z
+
+lemma val_map2_mk (n a i hi) : (map2 𝒜 hg hx (mk ⟨n, a, ⟨f ^ i, hi⟩, ⟨i, rfl⟩⟩)).val =
+    Localization.mk (a * g ^ i) ⟨x ^ i, (Submonoid.mem_powers_iff _ _).mpr ⟨i, rfl⟩⟩ := by
+  rw [map2_spec_mk]
+  simp [map1]
+  rw [Localization.awayLift_mk (hv := lemma1' hx), ← Localization.mk_one_eq_algebraMap,
+    Localization.mk_pow, Localization.mk_mul]
+  simp [hx]
+  congr
+
 /-
 
 ## We now prove part (2)
