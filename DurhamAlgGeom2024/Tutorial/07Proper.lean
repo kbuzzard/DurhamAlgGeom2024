@@ -1,5 +1,5 @@
 import Mathlib
-import DurhamAlgGeom2024.Tutorial.«06Separated»
+import DurhamAlgGeom2024.Tutorial.«06point5MoreHomogeneousLocalization»
 section missing_instance
 /-
 
