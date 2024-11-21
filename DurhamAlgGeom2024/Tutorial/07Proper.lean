@@ -434,16 +434,22 @@ theorem projective_implies_proper_aux
       simp only [RingHom.coe_comp, Function.comp_apply]
       rw [← map_pow, ← map_mul]
       congr
-      -- Kevin is working on this
       ext
       rw [val_mul]
       rw [val_map2_mk 𝒜]
       simp only [val_pow]
+      -- Kevin is working on the below sorry
       let foo : Algebra (Away 𝒜 (x j)) (Away 𝒜 (x j * x i0)) := inferInstance
       sorry
+      -- Kevin is working on the above sorry
     rw [map_div₀]
+    -- the below sorry: use foounit which says it's a unit in K and hence
+    -- nonzero and hence its valuation is positive.
     rw [div_le_iff₀ sorry, one_mul]
-    rw [← pow_le_pow_iff_left₀ (n := d j * ∏ i, d i) sorry sorry sorry]
+    rw [← pow_le_pow_iff_left₀ (n := d j * ∏ i, d i) zero_le' zero_le' <| by
+      -- product of positive things is nonzero
+      sorry
+    ]
     convert_to (∏ i, ψ i ^ (d i * ai i)) * ψ i0 ^ (d i0 * a * (d j - 1)) ≤ _
     · simp only [ψ, ← map_pow, ← map_prod, ← map_mul]
       congr 2
@@ -504,6 +510,10 @@ theorem projective_implies_proper_aux
     refine Valuation.map_add (ValuationRing.valuation A K) _ _
     rw [sup_le_iff]
     exact ⟨hhx, hhy⟩
-  | smul a x hx _ => sorry
+  | smul a x hx _ =>
+    -- a • x is (image of a in K) * x, which is (image of a in A) * x,
+    -- and stuff in A has valuation <= 1. This involves a tricky diagram
+    -- chase in practice though. Justus was thinking about this sorry
+    sorry
 
 end statement
