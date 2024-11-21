@@ -405,26 +405,29 @@ theorem projective_implies_proper_aux
     suffices (ValuationRing.valuation A K)
         (φ (mk {deg := a * d i0 * d j,
                 num := ⟨(∏ i : ι, x i ^ ai i) * (x i0) ^ (a * (d j - 1)), by
-                  have this1 := SetLike.fintype_prod_pow_mem_graded (v := ai) (i := d) hxdi
-                  have this2 := SetLike.pow_mem_graded (a * (d j - 1)) (hxdi i0)
-                  have := SetLike.mul_mem_graded this1 this2
-                  convert this using 2
-                  simp
+                  convert SetLike.mul_mem_graded
+                    (SetLike.fintype_prod_pow_mem_graded (v := ai) (i := d) hxdi)
+                    (SetLike.pow_mem_graded (a * (d j - 1)) (hxdi i0)) using 2
+                  simp only [smul_eq_mul]
                   rw [hai]
                   have hdj : (d j ≠ 0) := (hdi j).ne'
                   revert hdj
                   cases (d j)
-                  · simp
+                  · simp only [ne_eq, not_true_eq_false, mul_zero, zero_le, Nat.sub_eq_zero_of_le,
+                    zero_mul, add_zero, zero_eq_mul, IsEmpty.forall_iff]
                   · intro _
-                    simp
+                    simp only [add_tsub_cancel_right]
                     ring
                 ⟩,
-                den := ⟨(x j) ^ (a * d i0), sorry⟩,
+                den := ⟨(x j) ^ (a * d i0), SetLike.pow_mem_graded (a * d i0) (hxdi j)⟩,
                 den_mem := ⟨_, rfl⟩}) /
           (φ (mk {deg := d j * d i0,
-                  num := ⟨(x i0) ^ d j, sorry⟩,
-                  den := ⟨(x j) ^ (d i0), sorry⟩,
-                  den_mem := sorry})) ^ a) ≤ 1 by
+                  num := ⟨(x i0) ^ d j, SetLike.pow_mem_graded (d j) (hxdi i0)⟩,
+                  den := ⟨(x j) ^ (d i0), by
+                    have := SetLike.pow_mem_graded (d i0) (hxdi j)
+                    convert this using 2
+                    apply mul_comm⟩,
+                  den_mem := ⟨_, rfl⟩})) ^ a) ≤ 1 by
       convert this
       rw [eq_div_iff <| by rw [←isUnit_iff_ne_zero]; exact IsUnit.pow _ foounit]
       rw [← hφ', ← hφ']
