@@ -418,7 +418,12 @@ theorem projective_implies_proper_aux
       rw [← pow_le_pow_iff_left₀ (n := d j) sorry sorry sorry]
       sorry
     | zero => simp
-    | add x y hx hy _ _ => sorry
+    | add x y hx hy hhx hhy =>
+      simp only [RingHom.coe_comp, Function.comp_apply, map_add, ge_iff_le]
+      transitivity
+      refine Valuation.map_add (ValuationRing.valuation A K) _ _
+      rw [sup_le_iff]
+      exact ⟨hhx, hhy⟩
     | smul a x hx _ => sorry
   · unfold ψ at hi1
     apply Ne.isUnit
