@@ -84,9 +84,24 @@ theorem FG_by_homogeneous₀ : ∃ (ι₀ : Type) (x : ι₀ → S) (_ : Fintype
 theorem FG_by_homogeneous : ∃ (ι : Type) (x : ι → S) (_ : Fintype ι),
     (Algebra.adjoin (𝒜 0) (Set.range x) = ⊤) ∧
     (∀ i : ι, ∃ n : ℕ, 0 < n ∧ x i ∈ 𝒜 n) := by
-  -- this should now be easy
-  -- ι = {i : ι₀ | nᵢ ≠ 0}
-  sorry
+  obtain ⟨ι₀, x, _, h1, h2⟩ := FG_by_homogeneous₀ 𝒜
+  choose n hn using h2
+  use {i : ι₀ // 0 < n i}
+  use fun j ↦ x j.1
+  use inferInstance
+  refine ⟨?_, ?_⟩
+  · rw [← top_le_iff, ← h1]
+    apply Algebra.adjoin_le
+    rintro s ⟨i, rfl⟩
+    by_cases hi : 0 < n i
+    · apply Algebra.subset_adjoin
+      use ⟨i, hi⟩
+    · have hi0 : n i = 0 := by omega
+      exact Subalgebra.algebraMap_mem
+        (Algebra.adjoin (↥(𝒜 0)) (Set.range fun (j : {i : ι₀ // 0 < n i}) ↦ x j)) ⟨x i, hi0 ▸ hn i⟩
+  · rintro ⟨i, hi⟩
+    use n i, hi
+    apply hn
 
 open HomogeneousLocalization
 
