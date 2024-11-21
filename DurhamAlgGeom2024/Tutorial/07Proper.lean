@@ -401,6 +401,21 @@ theorem projective_implies_proper_aux
     induction foo2 using Submodule.span_induction with
     | mem x1 h =>
       obtain ⟨a, ai, hai, rfl⟩ := h
+      suffices (ValuationRing.valuation A K)
+          (φ (mk {deg := a * d i0 * d j,
+                  num := ⟨(∏ i : ι, x i ^ ai i) * (x i0) ^ (a * (d j - 1)), sorry⟩,
+                  den := ⟨(x j) ^ (a * d i0), sorry⟩,
+                  den_mem := sorry}) /
+           (φ (mk {deg := d i0 * d j,
+                   num := ⟨(x i0) ^ d j, sorry⟩,
+                   den := ⟨(x j) ^ (d i0), sorry⟩,
+                   den_mem := sorry})) ^ a) ≤ 1 by
+        convert this
+        -- proof: multiply it out
+        sorry
+      rw [map_div₀]
+      rw [div_le_iff₀ sorry, one_mul]
+      rw [← pow_le_pow_iff_left₀ (n := d j) sorry sorry sorry]
       sorry
     | zero => simp
     | add x y hx hy _ _ => sorry
