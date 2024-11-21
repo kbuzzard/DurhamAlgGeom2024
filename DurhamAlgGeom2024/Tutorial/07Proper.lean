@@ -27,7 +27,7 @@ variable [CommRing R₀] [CommRing S] [Algebra R₀ S]
 variable (𝒜 : ℕ → Submodule R₀ S) [GradedAlgebra 𝒜]
 
 instance : Algebra (𝒜 0) S := (SetLike.GradeZero.subalgebra 𝒜).toAlgebra
-variable [Algebra.FiniteType (𝒜 0) S]
+--variable [Algebra.FiniteType (𝒜 0) S]
 
 /-
 
@@ -43,15 +43,10 @@ elements of `S`.
 
 -/
 
--- S is finitely-generated over 𝒜 0
-example : ∃ (F : Set S),
-    (F.Finite) ∧ (Algebra.adjoin (𝒜 0) F = ⊤) := by
-  obtain ⟨F, hF⟩ := Algebra.FiniteType.out (R := 𝒜 0) (A := S)
-  exact ⟨F, F.finite_toSet, hF⟩
-
 -- But we need homogeneous generators.
 -- This preliminary version gives homogeneous generators
 -- but allows generators in degree 0
+variable [Algebra.FiniteType (𝒜 0) S] in
 theorem FG_by_homogeneous₀ : ∃ (ι₀ : Type) (x : ι₀ → S) (_ : Fintype ι₀),
     (Algebra.adjoin (𝒜 0) (Set.range x) = ⊤) ∧
     (∀ i : ι₀, ∃ n : ℕ, x i ∈ 𝒜 n) := by
@@ -81,6 +76,7 @@ theorem FG_by_homogeneous₀ : ∃ (ι₀ : Type) (x : ι₀ → S) (_ : Fintype
     use nf
     exact ((DirectSum.decompose 𝒜) f nf).2
 
+variable [Algebra.FiniteType (𝒜 0) S] in
 theorem FG_by_homogeneous : ∃ (ι : Type) (x : ι → S) (_ : Fintype ι),
     (Algebra.adjoin (𝒜 0) (Set.range x) = ⊤) ∧
     (∀ i : ι, ∃ n : ℕ, 0 < n ∧ x i ∈ 𝒜 n) := by
@@ -145,13 +141,12 @@ projective_implies_proper_aux {R₀ S : Type} [CommRing R₀] [CommRing S] [Alge
       ∃ φ', φ'.comp (map2 𝒜 h₀ ⋯) = φ ∧ Set.range ⇑(φ'.comp (map2 𝒜 hf ⋯)) ⊆ Set.range ⇑(algebraMap A K)
 -/
 
-omit [GradedAlgebra 𝒜] [Algebra.FiniteType (↥(𝒜 0)) S] in
+omit [GradedAlgebra 𝒜] in
 lemma away_zero_subsingleton : Subsingleton (Away 𝒜 0) := by
   apply HomogeneousLocalization.subsingleton
   use 1
   simp
 
-omit [Algebra.FiniteType (↥(𝒜 0)) S] in
 lemma f_ne_zero_of_away_ringHom (φ : Away 𝒜 f →+* K) : f ≠ 0 := by
   rintro rfl
   have : Subsingleton (Away 𝒜 0) :=
@@ -160,7 +155,6 @@ lemma f_ne_zero_of_away_ringHom (φ : Away 𝒜 f →+* K) : f ≠ 0 := by
   have : Nontrivial K := CommGroupWithZero.toNontrivial
   exact false_of_nontrivial_of_subsingleton K
 
-omit [Algebra.FiniteType (↥(𝒜 0)) S] in
 lemma ι_nonempty (hd : 0 < d) (ι : Type) (x : ι → S)
     {f : S} (hf : f ∈ 𝒜 d) (φ : Away 𝒜 f →+* K)
     (hι : Algebra.adjoin (↥(𝒜 0)) (Set.range x) = ⊤) : Nonempty ι := by
@@ -211,12 +205,10 @@ theorem SetLike.fintype_prod_pow_mem_graded {ι R S : Type*} [SetLike S R] [Comm
   SetLike.prod_mem_graded fun k _ ↦ (SetLike.pow_mem_graded (v k) (hF _))
 
 
-omit [Algebra.FiniteType (↥(𝒜 0)) S] in
 lemma algebraMap_eq' (x : Submonoid S) (a) :
     algebraMap (𝒜 0) (HomogeneousLocalization 𝒜 x) a =
       HomogeneousLocalization.fromZeroRingHom 𝒜 x a := rfl
 
-omit [Algebra.FiniteType (↥(𝒜 0)) S] in
 open HomogeneousLocalization in
 theorem Span_monomial_eq_top (f : S) (d : ℕ) (hf : f ∈ 𝒜 d) (ι : Type) (x : ι → S) (_ : Fintype ι)
     (hx : Algebra.adjoin (𝒜 0) (Set.range x) = ⊤) (dx : ι→ ℕ ) (hxd : ∀i, x i ∈ 𝒜 (dx i)) :
@@ -326,8 +318,30 @@ theorem Span_monomial_eq_top (f : S) (d : ℕ) (hf : f ∈ 𝒜 d) (ι : Type) (
     | h_add =>
       simp_all [mul_add]
 
+-- theorem extracted_1 {R₀ S : Type} [inst : CommRing R₀] [inst_1 : CommRing S] [inst_2 : Algebra R₀ S]
+--   (𝒜 : ℕ → Submodule R₀ S) [inst_3 : GradedAlgebra 𝒜] {A : Type} [inst_4 : CommRing A] [inst_5 : IsDomain A]
+--   [inst_6 : ValuationRing A] {K : Type} [inst_7 : Field K] [inst_8 : Algebra A K] [inst_9 : IsFractionRing A K]
+--   (ι : Type) [inst_10 : Fintype ι] [DecidableEq ι] (x : ι → S) (h2 : Algebra.adjoin (↥(𝒜 0)) (Set.range x) = ⊤) (j : ι)
+--   (φ : Away 𝒜 (x j) →+* K) (d : ι → ℕ) (hdi : ∀ (i : ι), 0 < d i) (hxdi : ∀ (i : ι), x i ∈ 𝒜 (d i)) :
+--   let ψ := fun i ↦
+--     (ValuationRing.valuation A K)
+--       (φ (mk { deg := d j * d i, num := ⟨x i ^ d j, ⋯⟩, den := ⟨x j ^ d i, ⋯⟩, den_mem := ⋯ }) ^
+--         ∏ k ∈ Finset.univ.erase i, d k);
+--   Nonempty ι →
+--     ∀ (foo_1 : (Finset.image ψ Finset.univ).Nonempty),
+--       let Kmax := (Finset.image ψ Finset.univ).max' foo_1;
+--       ∀ (i0 : ι),
+--         ψ i0 = Kmax →
+--           (∀ (j : ι), ψ j ≤ ψ i0) →
+--             Kmax ≠ 0 →
+--               0 < Kmax →
+--                 IsLocalization
+--                     (Submonoid.powers
+--                       (mk { deg := d j * d i0, num := ⟨x i0 ^ d j, ⋯⟩, den := ⟨x j ^ d i0, ⋯⟩, den_mem := ⋯ }))
+--                     (Away 𝒜 (x j * x i0)) →
+--                   ∃ φ',
+--                     φ'.comp (map2 𝒜 ⋯ ⋯) = φ ∧ Set.range ⇑(φ'.comp (map2 𝒜 ⋯ ⋯)) ⊆ Set.range ⇑(algebraMap A K) := sorry
 
-omit f φ [Algebra.FiniteType (↥(𝒜 0)) S] in
 theorem projective_implies_proper_aux
     (ι : Type) [Fintype ι] (x : ι → S)
     (h2 : Algebra.adjoin (↥(𝒜 0)) (Set.range x) = (⊤ : Subalgebra (𝒜 0) S))
@@ -335,13 +349,12 @@ theorem projective_implies_proper_aux
     (φ : Away 𝒜 (x j) →+* K)
     (d : ι → ℕ)
     (hdi : ∀ i, 0 < d i)
-    (hxdi : ∀ i, x i ∈ 𝒜 (d i))
-    :
+    (hxdi : ∀ i, x i ∈ 𝒜 (d i)) :
     ∃ (x₀ : S) (e : ℕ) (he : 0 < e)
-    (h₀ : x₀ ∈ 𝒜 e)
-    (φ' : Away 𝒜 ((x j) * x₀) →+* K),
-    (φ'.comp (map2 𝒜 h₀ rfl) = φ) ∧
-    Set.range (φ'.comp (map2 𝒜 (hxdi j) (mul_comm (x j) x₀))) ⊆ Set.range (algebraMap A K) := by
+      (h₀ : x₀ ∈ 𝒜 e)
+      (φ' : Away 𝒜 ((x j) * x₀) →+* K),
+      (φ'.comp (map2 𝒜 h₀ rfl) = φ) ∧
+      Set.range (φ'.comp (map2 𝒜 (hxdi j) (mul_comm (x j) x₀))) ⊆ Set.range (algebraMap A K) := by
   classical
   let ψ: (i : ι) → ValuationRing.ValueGroup A K :=
     fun i ↦ ValuationRing.valuation A K <| (φ (mk {
@@ -396,7 +409,9 @@ theorem projective_implies_proper_aux
     rw [Valuation.mem_integer_iff]
     have := Span_monomial_eq_top 𝒜 (x i0) (d i0) (hxdi i0) ι
       x inferInstance h2 d hxdi
-    have foo2 : sx ∈ (⊤ : Submodule (𝒜 0) (Away 𝒜 (x i0))) := by trivial
+    letI inst1 : Algebra (𝒜 0) (Away 𝒜 (x i0)) := inferInstance
+    letI inst2 : Module (𝒜 0) (Away 𝒜 (x i0)) := Algebra.toModule
+    have foo2 : sx ∈ (⊤ : Submodule (𝒜 0) (Away 𝒜 (x i0))) := Submodule.mem_top
     rw [← this] at foo2
     induction foo2 using Submodule.span_induction with
     | mem x1 h =>
@@ -429,7 +444,6 @@ theorem projective_implies_proper_aux
     apply Ne.isUnit
     intro rid
     rw [rid] at hi1
-
     simp only [map_pow, map_zero] at hi1
     rw [zero_pow] at hi1
     · exact hKmax.ne' hi1.symm
