@@ -185,18 +185,30 @@ lemma ι_nonempty (hd : 0 < d) (ι : Type) (x : ι → S)
   rw [← hg]
   exact hg1
 
-/-
-projective_implies_proper_aux {R₀ S : Type} [CommRing R₀] [CommRing S] [Algebra R₀ S] (𝒜 : ℕ → Submodule R₀ S)
-  [GradedAlgebra 𝒜] [Algebra.FiniteType (↥(𝒜 0)) S] {d : ℕ} {f : S} (hf : f ∈ 𝒜 d) {A : Type} [CommRing A] [IsDomain A]
-  [ValuationRing A] {K : Type} [Field K] [Algebra A K] [IsFractionRing A K] (φ : Away 𝒜 f →+* K) (hd : 0 < d) :
-  ∃ x₀ e,
-    ∃ (_ : 0 < e) (h₀ : x₀ ∈ 𝒜 e),
-      ∃ φ', φ'.comp (map2 𝒜 h₀ ⋯) = φ ∧ Set.range ⇑(φ'.comp (map2 𝒜 hf ⋯)) ⊆ Set.range ⇑(algebraMap A K)
-      -/
-omit f φ [Algebra.FiniteType (↥(𝒜 0)) S]
+instance (x : Submonoid S) : Algebra (𝒜 0) (HomogeneousLocalization 𝒜 x) :=
+  (HomogeneousLocalization.fromZeroRingHom 𝒜 x).toAlgebra
 
--- (∀ i : ι, ∃ n : ℕ, 0 < n ∧ x i ∈ 𝒜 n)
+theorem SetLike.finset_prod_mem_graded {ι R S : Type*} [SetLike S R] [CommMonoid R] [AddCommMonoid ι]
+  {A : ι → S} [SetLike.GradedMul A] {κ : Type*} ⦃i : κ → ι⦄ {g : κ → R} {F : Finset κ}
+  (hF : ∀ k ∈ F, g k ∈ A (i k)) : ∏ k ∈ F, g k ∈ A (∑ k ∈ F, i k) := sorry
 
+theorem SetLike.fintype_prod_mem_graded {ι R S : Type*} [SetLike S R] [CommMonoid R] [AddCommMonoid ι]
+    {A : ι → S} [SetLike.GradedMul A] {κ : Type*} [Fintype κ] ⦃i : κ → ι⦄ {g : κ → R}
+    (hF : ∀ k, g k ∈ A (i k)) : ∏ k, g k ∈ A (∑ k, i k) :=
+  finset_prod_mem_graded fun k _ ↦ hF k
+
+open HomogeneousLocalization in
+theorem Span_monomial_eq_top (f : S) (d : ℕ) (hf : f ∈ 𝒜 d) (ι : Type) (x : ι → S) (_ : Fintype ι)
+    (hx : Algebra.adjoin (𝒜 0) (Set.range x) = ⊤) (dx : ι→ ℕ ) (hxd : ∀i, x i ∈ 𝒜 (dx i)) :
+    Submodule.span (𝒜 0) { mk (𝒜 := 𝒜) (x := .powers f)
+      ⟨a * d, ⟨∏ i, x i ^ ai i, by
+        rw [← hai]
+        apply SetLike.fintype_prod_mem_graded
+        exact fun i ↦ SetLike.pow_mem_graded _ (hxd i)⟩, ⟨f ^ a, SetLike.pow_mem_graded a hf⟩, by use a⟩ |
+        (a : ℕ) (ai : ι → ℕ) (hai : ∑ i, ai i * dx i = a * d) } = ⊤ := by
+  sorry
+
+omit f φ [Algebra.FiniteType (↥(𝒜 0)) S] in
 theorem projective_implies_proper_aux
     (ι : Type) [Fintype ι] (x : ι → S)
     (h2 : Algebra.adjoin (↥(𝒜 0)) (Set.range x) = (⊤ : Subalgebra (𝒜 0) S))
