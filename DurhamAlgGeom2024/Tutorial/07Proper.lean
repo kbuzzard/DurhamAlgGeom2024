@@ -188,14 +188,24 @@ lemma ι_nonempty (hd : 0 < d) (ι : Type) (x : ι → S)
 instance (x : Submonoid S) : Algebra (𝒜 0) (HomogeneousLocalization 𝒜 x) :=
   (HomogeneousLocalization.fromZeroRingHom 𝒜 x).toAlgebra
 
-theorem SetLike.finset_prod_mem_graded {ι R S : Type*} [SetLike S R] [CommMonoid R] [AddCommMonoid ι]
-  {A : ι → S} [SetLike.GradedMul A] {κ : Type*} ⦃i : κ → ι⦄ {g : κ → R} {F : Finset κ}
-  (hF : ∀ k ∈ F, g k ∈ A (i k)) : ∏ k ∈ F, g k ∈ A (∑ k ∈ F, i k) := sorry
+theorem SetLike.prod_mem_graded {ι R S : Type*} [SetLike S R] [CommMonoid R]
+    [AddCommMonoid ι] {A : ι → S} [SetLike.GradedMonoid A] {κ : Type*} ⦃i : κ → ι⦄ {g : κ → R}
+    {F : Finset κ} (hF : ∀ k ∈ F, g k ∈ A (i k)) : ∏ k ∈ F, g k ∈ A (∑ k ∈ F, i k) := by
+  classical
+  induction F using Finset.induction_on
+  · simp [GradedOne.one_mem]
+  · case insert j F' hF2 h3 =>
+    rw [Finset.prod_insert hF2, Finset.sum_insert hF2]
+    apply SetLike.mul_mem_graded (hF j <| Finset.mem_insert_self j F')
+    apply h3
+    intro k hk
+    apply hF k
+    exact Finset.mem_insert_of_mem hk
 
 theorem SetLike.fintype_prod_mem_graded {ι R S : Type*} [SetLike S R] [CommMonoid R] [AddCommMonoid ι]
-    {A : ι → S} [SetLike.GradedMul A] {κ : Type*} [Fintype κ] ⦃i : κ → ι⦄ {g : κ → R}
+    {A : ι → S} [SetLike.GradedMonoid A] {κ : Type*} [Fintype κ] ⦃i : κ → ι⦄ {g : κ → R}
     (hF : ∀ k, g k ∈ A (i k)) : ∏ k, g k ∈ A (∑ k, i k) :=
-  finset_prod_mem_graded fun k _ ↦ hF k
+  prod_mem_graded fun k _ ↦ hF k
 
 open HomogeneousLocalization in
 theorem Span_monomial_eq_top (f : S) (d : ℕ) (hf : f ∈ 𝒜 d) (ι : Type) (x : ι → S) (_ : Fintype ι)
