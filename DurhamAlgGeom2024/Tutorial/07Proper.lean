@@ -312,6 +312,11 @@ theorem Localization.mk_prod {R : Type*} [CommRing R] {S : Submonoid R} {ι} (t 
   · simp [Localization.mk_one]
   · simp [Finset.prod_insert ‹_›, *, Localization.mk_mul]
 
+lemma useful (n : ℕ) : n = 0 ∨ ∃ m, n = m + 1 := by
+  cases n with
+  | zero => tauto
+  | succ n => tauto
+
 theorem projective_implies_proper_aux
     (ι : Type) [Fintype ι] (x : ι → S)
     (h2 : Algebra.adjoin (↥(𝒜 0)) (Set.range x) = (⊤ : Subalgebra (𝒜 0) S))
@@ -388,6 +393,7 @@ theorem projective_implies_proper_aux
     exact hdi k |>.ne' hk
   let φ' := @IsLocalization.Away.lift _ _ _ _ _ _ _ _ foo φ foounit
   have hφ' : ∀ s, φ' _ = _ := @IsLocalization.Away.AwayMap.lift_eq _ _ _ _ _ _ _ _ foo _ foounit
+  have hφ'1 : ∀ (s : Away 𝒜 (x j)), φ' (map2 𝒜 (hxdi i0) rfl s) = φ s := fun s ↦ hφ' s
   use φ'
   use IsLocalization.Away.AwayMap.lift_comp ..
   rintro _ ⟨sx, rfl⟩
@@ -430,7 +436,7 @@ theorem projective_implies_proper_aux
                   den_mem := ⟨_, rfl⟩})) ^ a) ≤ 1 by
       convert this
       rw [eq_div_iff <| by rw [←isUnit_iff_ne_zero]; exact IsUnit.pow _ foounit]
-      rw [← hφ', ← hφ']
+      rw [← hφ'1, ← hφ'1]
       simp only [RingHom.coe_comp, Function.comp_apply]
       rw [← map_pow, ← map_mul]
       congr
@@ -438,10 +444,18 @@ theorem projective_implies_proper_aux
       rw [val_mul]
       rw [val_map2_mk 𝒜]
       simp only [val_pow]
+      rw [val_map2_mk 𝒜]
+      rw [val_map2_mk 𝒜]
+      rw [Localization.mk_pow, Localization.mk_mul, Localization.mk_eq_mk_iff, Localization.r_iff_exists]
+      use 1
+      simp only [OneMemClass.coe_one, one_mul, SubmonoidClass.mk_pow, Submonoid.mk_mul_mk]
       -- Kevin is working on the below sorry
-      let foo : Algebra (Away 𝒜 (x j)) (Away 𝒜 (x j * x i0)) := inferInstance
-      sorry
-      -- Kevin is working on the above sorry
+
+      obtain h | ⟨m, hm⟩ := useful (d j)
+      · exfalso
+        exact (hdi j).ne' h
+      rw [hm, Nat.add_sub_cancel]
+      ring
     rw [map_div₀]
     -- the below sorry: use foounit which says it's a unit in K and hence
     -- nonzero and hence its valuation is positive.
@@ -514,6 +528,7 @@ theorem projective_implies_proper_aux
     -- a • x is (image of a in K) * x, which is (image of a in A) * x,
     -- and stuff in A has valuation <= 1. This involves a tricky diagram
     -- chase in practice though. Justus was thinking about this sorry
+    rw [Algebra.smul_def]
     sorry
 
 end statement
