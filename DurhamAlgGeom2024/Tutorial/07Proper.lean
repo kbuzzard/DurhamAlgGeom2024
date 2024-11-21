@@ -342,6 +342,14 @@ theorem Span_monomial_eq_top (f : S) (d : ℕ) (hf : f ∈ 𝒜 d) (ι : Type) (
 --                   ∃ φ',
 --                     φ'.comp (map2 𝒜 ⋯ ⋯) = φ ∧ Set.range ⇑(φ'.comp (map2 𝒜 ⋯ ⋯)) ⊆ Set.range ⇑(algebraMap A K) := sorry
 
+theorem Localization.mk_prod {R : Type*} [CommRing R] {S : Submonoid R} {ι} (t : Finset ι)
+    (f : ι → R) (s : ι → S) :
+    ∏ i in t, Localization.mk (f i) (s i) = Localization.mk (∏ i in t, f i) (∏ i in t, s i) := by
+  classical
+  induction t using Finset.induction_on
+  · simp [Localization.mk_one]
+  · simp [Finset.prod_insert ‹_›, *, Localization.mk_mul]
+
 theorem projective_implies_proper_aux
     (ι : Type) [Fintype ι] (x : ι → S)
     (h2 : Algebra.adjoin (↥(𝒜 0)) (Set.range x) = (⊤ : Subalgebra (𝒜 0) S))
@@ -374,29 +382,29 @@ theorem projective_implies_proper_aux
     rw [hi1]
     exact Finset.le_max' (Finset.image ψ Finset.univ) (ψ j) (by simp)
   use x i0, d i0, hdi i0, hxdi i0
-  have hKmax : Kmax ≠ 0 := by
-    intro hKmax
-    unfold Kmax at hKmax
-    have : ∀ i : ι, ψ i ≤ 0 := by
-      intro i
-      rw [← hKmax]
-      apply Finset.le_max'
-      simp
-    have this : ∀ i, ψ i = 0 := by
-      intro i
-      specialize this i
-      exact le_zero_iff.mp this
-    unfold ψ at this
-    simp only [map_pow, pow_eq_zero_iff', map_eq_zero, ne_eq] at this
-    specialize this j
-    suffices φ 1 = 0 by
-      simp only [map_one, one_ne_zero] at this
-    convert this.1
-    ext
-    simp only [val_one, val_mk]
-    symm
-    convert Localization.mk_self _
-    rfl
+  have hKmax : Kmax ≠ 0 := by sorry
+    -- intro hKmax
+    -- unfold Kmax at hKmax
+    -- have : ∀ i : ι, ψ i ≤ 0 := by
+    --   intro i
+    --   rw [← hKmax]
+    --   apply Finset.le_max'
+    --   simp
+    -- have this : ∀ i, ψ i = 0 := by
+    --   intro i
+    --   specialize this i
+    --   exact le_zero_iff.mp this
+    -- unfold ψ at this
+    -- simp only [map_pow, pow_eq_zero_iff', map_eq_zero, ne_eq] at this
+    -- specialize this j
+    -- suffices φ 1 = 0 by
+    --   simp only [map_one, one_ne_zero] at this
+    -- convert this.1
+    -- ext
+    -- simp only [val_one, val_mk]
+    -- symm
+    -- convert Localization.mk_self _
+    -- rfl
   have hKmax : 0 < Kmax := zero_lt_iff.mpr hKmax
   have foo := HomogeneousLocalization.Away.isLocalization_mul 𝒜 (x j) (x i0) (d j) (d i0)
     (hxdi j) (hxdi i0) (hdi _).ne' (hdi _).ne'
@@ -430,8 +438,54 @@ theorem projective_implies_proper_aux
         sorry
       rw [map_div₀]
       rw [div_le_iff₀ sorry, one_mul]
-      rw [← pow_le_pow_iff_left₀ (n := d j) sorry sorry sorry]
-      sorry
+      rw [← pow_le_pow_iff_left₀ (n := d j * ∏ i, d i) sorry sorry sorry]
+      convert_to (∏ i, ψ i ^ (d i * ai i)) * ψ i0 ^ (d i0 * a * (d j - 1)) ≤ _
+      · simp only [ψ, ← map_pow, ← map_prod, ← map_mul]
+        congr 2
+        apply (show Function.Injective (algebraMap (Away 𝒜 (x j)) (Localization.Away (x j)))
+          from val_injective _)
+        simp only [map_pow, map_prod, map_mul]
+        simp only [HomogeneousLocalization.algebraMap_apply, val_mk,
+          Localization.mk_pow, Localization.mk_prod, Localization.mk_mul]
+        rw [Localization.mk_eq_mk_iff, Localization.r_iff_exists]
+        use 1
+        simp only [OneMemClass.coe_one, SubmonoidClass.mk_pow, ← pow_mul, Submonoid.coe_mul,
+          SubmonoidClass.coe_finset_prod, one_mul]
+        simp_rw [Finset.mul_prod_erase Finset.univ d (h := Finset.mem_univ _),
+          mul_assoc, ← mul_assoc (Finset.prod ..),
+          Finset.prod_erase_mul Finset.univ d (h := Finset.mem_univ _)]
+        rw [Finset.prod_pow_eq_pow_sum, ← pow_add, mul_pow, ← Finset.prod_pow]
+        simp_rw [← pow_mul]
+        congr 3
+        · simp_rw [mul_assoc, ← Finset.mul_sum, mul_comm (d _) (ai _), hai]
+          have : d j ≠ 0 := (hdi j).ne'
+          revert this
+          cases d j
+          · simp
+          · intro _
+            simp
+            ring
+        · ext i
+          congr 1
+          ring
+        · ring
+      · trans (∏ i : ι, ψ i0 ^ (d i * ai i)) * ψ i0 ^ (d i0 * a * (d j - 1))
+        · gcongr
+          · exact zero_le'
+          · exact hi0 _
+        · rw [Finset.prod_pow_eq_pow_sum, ← pow_add]
+          convert_to (ψ i0) ^ (d i0 * a * d j) ≤ _
+          · congr 1
+            simp_rw [mul_comm (d _) (ai _), hai]
+            have : d j ≠ 0 := (hdi j).ne'
+            revert this
+            cases d j
+            · simp
+            · intro _
+              simp
+              ring
+          · simp only [ψ, ← map_pow, ← map_prod, ← map_mul]
+            congr 4
     | zero => simp
     | add x y hx hy hhx hhy =>
       simp only [RingHom.coe_comp, Function.comp_apply, map_add, ge_iff_le]
