@@ -209,9 +209,30 @@ lemma algebraMap_eq' (x : Submonoid S) (a) :
     algebraMap (𝒜 0) (HomogeneousLocalization 𝒜 x) a =
       HomogeneousLocalization.fromZeroRingHom 𝒜 x a := rfl
 
+theorem Submonoid.exists_finsupp_of_mem_closure_range {M : Type*} [CommMonoid M] {ι : Type*}
+    (f : ι → M) {x} (hx : x ∈ Submonoid.closure (Set.range f)) :
+    ∃ a : ι →₀ ℕ, x = a.prod (f · ^ ·) := by
+  classical
+  induction hx using Submonoid.closure_induction with
+  | mem x h => obtain ⟨i, rfl⟩ := h; exact ⟨Finsupp.single i 1, by simp⟩
+  | one => use 0; simp
+  | mul x y hx hy hx' hy' =>
+    obtain ⟨⟨v, rfl⟩, w, rfl⟩ := And.intro hx' hy'
+    use v + w
+    rw [Finsupp.prod_add_index]
+    · simp
+    · simp [pow_add]
+
+theorem Submonoid.exists_of_mem_closure_range {M : Type*} [CommMonoid M] {ι : Type*} [Fintype ι]
+    (f : ι → M) {x} (hx : x ∈ Submonoid.closure (Set.range f)) :
+    ∃ a : ι → ℕ, x = ∏ i, f i ^ a i := by
+  obtain ⟨a, rfl⟩ := Submonoid.exists_finsupp_of_mem_closure_range f hx
+  exact ⟨a, by simp⟩
+
 open HomogeneousLocalization in
-theorem Span_monomial_eq_top (f : S) (d : ℕ) (hf : f ∈ 𝒜 d) (ι : Type) (x : ι → S) (_ : Fintype ι)
-    (hx : Algebra.adjoin (𝒜 0) (Set.range x) = ⊤) (dx : ι→ ℕ ) (hxd : ∀i, x i ∈ 𝒜 (dx i)) :
+theorem HomogeneousLocalization.Away.span_monomial_eq_top (f : S) (d : ℕ) (hf : f ∈ 𝒜 d)
+    (ι : Type) (x : ι → S) (_ : Fintype ι)
+    (hx : Algebra.adjoin (𝒜 0) (Set.range x) = ⊤) (dx : ι → ℕ ) (hxd : ∀i, x i ∈ 𝒜 (dx i)) :
     Submodule.span (𝒜 0) { mk (𝒜 := 𝒜) (x := .powers f)
       ⟨a * d, ⟨∏ i, x i ^ ai i, hai ▸ SetLike.fintype_prod_pow_mem_graded hxd⟩,
         ⟨f ^ a, SetLike.pow_mem_graded a hf⟩, by use a⟩ |
@@ -223,74 +244,39 @@ theorem Span_monomial_eq_top (f : S) (d : ℕ) (hf : f ∈ 𝒜 d) (ι : Type) (
   rintro x -
   obtain ⟨⟨n, ⟨a, ha⟩, ⟨b, hb'⟩, ⟨j, (rfl : _ = b)⟩⟩, rfl⟩ := mk_surjective x
   by_cases hfj : f ^ j = 0
-  · exfalso
-    apply HH
-    exact HomogeneousLocalization.subsingleton _ ⟨_, hfj⟩
-  have : DirectSum.decompose 𝒜 a n = (⟨ a, ha⟩  ) := by
-    ext
-    exact DirectSum.decompose_of_mem_same 𝒜 ha
+  · exact (HH (HomogeneousLocalization.subsingleton _ ⟨_, hfj⟩)).elim
+  have : DirectSum.decompose 𝒜 a n = ⟨a, ha⟩ := Subtype.ext (DirectSum.decompose_of_mem_same 𝒜 ha)
   simp_rw [← this]
   clear this ha
-  have : a ∈ Submodule.span (𝒜 0) ↑(Submonoid.closure (Set.range x)) := by
+  have : a ∈ Submodule.span (𝒜 0) (Submonoid.closure (Set.range x)) := by
     rw [← Algebra.adjoin_eq_span, hx]
     trivial
   induction this using Submodule.span_induction with
   | mem a ha' =>
-    obtain ⟨l, hl, hl' ⟩  := Submonoid.exists_multiset_of_mem_closure (ha')
+    obtain ⟨ai, rfl⟩ := Submonoid.exists_of_mem_closure_range _ ha'
     clear ha'
-    obtain ⟨ai, rfl⟩ : ∃ l : ι → ℕ, a = ∏ i, x i ^ l i := by
-      subst hl'
-      induction l using Multiset.induction with
-      | empty => use 0; simp
-      | cons a l ih =>
-        simp only [Multiset.prod_cons, Multiset.mem_cons, Set.mem_range,
-          forall_eq_or_imp] at hl
-        obtain ⟨⟨a, rfl⟩, h⟩ := hl
-        obtain ⟨l', hl''⟩ := ih h
-        simp only [Multiset.prod_cons, hl'']
-        use l' + (if · = a then 1 else 0)
-        simp only [Pi.add_apply, pow_add, pow_ite, pow_one, pow_zero, mul_one]
-        rw [Finset.prod_mul_distrib]
-        simp only [Finset.prod_ite_eq', Finset.mem_univ, ↓reduceIte]
-        exact mul_comm _ _
-    clear hl hl' l
     by_cases H : ∑ i, ai i * dx i = n
     · apply Submodule.subset_span
-      simp
-      use j
-      use ai
-      constructor
+      refine ⟨j, ai, H.trans ?_, ?_⟩
+      · exact DirectSum.degree_eq_of_mem_mem 𝒜 hb'
+          (SetLike.pow_mem_graded j hf) hfj
       · ext
-        simp
+        simp only [val_mk]
         congr
-        symm
-        apply DirectSum.decompose_of_mem_same
-        rw [← H]
-        exact SetLike.fintype_prod_pow_mem_graded hxd
-      · trans n
-        · exact H
-        · apply DirectSum.degree_eq_of_mem_mem 𝒜 hb' ?_ hfj
-          exact SetLike.pow_mem_graded j hf
-    · convert zero_mem _
+        refine (DirectSum.decompose_of_mem_same _ ?_).symm
+        exact H ▸ SetLike.fintype_prod_pow_mem_graded hxd
+    · convert zero_mem (Submodule.span (𝒜 0) _)
       ext
-      simp
-      have :( ((DirectSum.decompose 𝒜) (∏ i : ι, x i ^ ai i)) n ).1= 0 := by
-        apply DirectSum.decompose_of_mem_ne _ _ H
+      have : (DirectSum.decompose 𝒜 (∏ i : ι, x i ^ ai i) n).1= 0 := by
+        refine DirectSum.decompose_of_mem_ne _ ?_ H
         exact SetLike.fintype_prod_pow_mem_graded hxd
-      rw [this, Localization.mk_zero]
-      infer_instance
-      infer_instance
+      simp [this, Localization.mk_zero]
   | zero =>
-      convert zero_mem _
-      · ext ; simp ; rw [Localization.mk_zero]
-      infer_instance
-      infer_instance
-
+      convert zero_mem (Submodule.span (𝒜 0) _)
+      ext; simp [Localization.mk_zero]
   | add s t hs ht hs' ht'  =>
     convert add_mem hs' ht'
-    ext ; simp
-    rw [← Localization.add_mk_self]
-
+    ext; simp [← Localization.add_mk_self]
   | smul r x hx hx' =>
     convert Submodule.smul_mem _ r hx'
     ext
@@ -340,7 +326,7 @@ theorem projective_implies_proper_aux
       (φ'.comp (map2 𝒜 h₀ rfl) = φ) ∧
       Set.range (φ'.comp (map2 𝒜 (hxdi j) (mul_comm (x j) x₀))) ⊆ Set.range (algebraMap A K) := by
   classical
-  let ψ: (i : ι) → ValuationRing.ValueGroup A K :=
+  let ψ : (i : ι) → ValuationRing.ValueGroup A K :=
     fun i ↦ ValuationRing.valuation A K <| (φ (mk {
       deg := (d j) * d i
       num := ⟨x i ^ d j, SetLike.pow_mem_graded (d j) (hxdi i) ⟩
@@ -407,7 +393,7 @@ theorem projective_implies_proper_aux
   rintro _ ⟨sx, rfl⟩
   rw [Set.mem_range, ← ValuationRing.mem_integer_iff]
   rw [Valuation.mem_integer_iff]
-  have := Span_monomial_eq_top 𝒜 (x i0) (d i0) (hxdi i0) ι
+  have := HomogeneousLocalization.Away.span_monomial_eq_top 𝒜 (x i0) (d i0) (hxdi i0) ι
     x inferInstance h2 d hxdi
   letI inst1 : Algebra (𝒜 0) (Away 𝒜 (x i0)) := inferInstance
   letI inst2 : Module (𝒜 0) (Away 𝒜 (x i0)) := Algebra.toModule
