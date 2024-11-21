@@ -358,29 +358,29 @@ theorem projective_implies_proper_aux
     rw [hi1]
     exact Finset.le_max' (Finset.image ψ Finset.univ) (ψ j) (by simp)
   use x i0, d i0, hdi i0, hxdi i0
-  have hKmax : Kmax ≠ 0 := by sorry
-    -- intro hKmax
-    -- unfold Kmax at hKmax
-    -- have : ∀ i : ι, ψ i ≤ 0 := by
-    --   intro i
-    --   rw [← hKmax]
-    --   apply Finset.le_max'
-    --   simp
-    -- have this : ∀ i, ψ i = 0 := by
-    --   intro i
-    --   specialize this i
-    --   exact le_zero_iff.mp this
-    -- unfold ψ at this
-    -- simp only [map_pow, pow_eq_zero_iff', map_eq_zero, ne_eq] at this
-    -- specialize this j
-    -- suffices φ 1 = 0 by
-    --   simp only [map_one, one_ne_zero] at this
-    -- convert this.1
-    -- ext
-    -- simp only [val_one, val_mk]
-    -- symm
-    -- convert Localization.mk_self _
-    -- rfl
+  have hKmax : Kmax ≠ 0 := by
+    intro hKmax
+    unfold Kmax at hKmax
+    have : ∀ i : ι, ψ i ≤ 0 := by
+      intro i
+      rw [← hKmax]
+      apply Finset.le_max'
+      simp
+    have this : ∀ i, ψ i = 0 := by
+      intro i
+      specialize this i
+      exact le_zero_iff.mp this
+    unfold ψ at this
+    simp only [map_pow, pow_eq_zero_iff', map_eq_zero, ne_eq] at this
+    specialize this j
+    suffices φ 1 = 0 by
+      simp only [map_one, one_ne_zero] at this
+    convert this.1
+    ext
+    simp only [val_one, val_mk]
+    symm
+    convert Localization.mk_self _
+    rfl
   have hKmax : 0 < Kmax := zero_lt_iff.mpr hKmax
   have foo := HomogeneousLocalization.Away.isLocalization_mul 𝒜 (x j) (x i0) (d j) (d i0)
     (hxdi j) (hxdi i0) (hdi _).ne' (hdi _).ne'
