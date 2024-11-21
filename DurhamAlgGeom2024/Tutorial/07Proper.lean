@@ -432,12 +432,12 @@ theorem projective_implies_proper_aux
                   den := ⟨(x j) ^ (d i0), sorry⟩,
                   den_mem := sorry})) ^ a) ≤ 1 by
       convert this
-      -- proof: multiply it out
       rw [eq_div_iff <| by rw [←isUnit_iff_ne_zero]; exact IsUnit.pow _ foounit]
       rw [← hφ', ← hφ']
       simp only [RingHom.coe_comp, Function.comp_apply]
       rw [← map_pow, ← map_mul]
       congr
+      -- Kevin is working on this
       sorry
     rw [map_div₀]
     rw [div_le_iff₀ sorry, one_mul]
