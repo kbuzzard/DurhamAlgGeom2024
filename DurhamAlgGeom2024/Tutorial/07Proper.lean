@@ -310,6 +310,90 @@ theorem Localization.mk_prod {R : Type*} [CommRing R] {S : Submonoid R} {ι} (t 
   · simp [Localization.mk_one]
   · simp [Finset.prod_insert ‹_›, *, Localization.mk_mul]
 
+open HomogeneousLocalization in
+theorem HomogeneousLocalization.Away.adjoin_monomial_eq_top (f : S) (d : ℕ) (hf : f ∈ 𝒜 d) (hd : 0 < d)
+    (ι : Type) (x : ι → S) (_ : Fintype ι)
+    (hx : Algebra.adjoin (𝒜 0) (Set.range x) = ⊤) (dx : ι → ℕ ) (hxd : ∀i, x i ∈ 𝒜 (dx i)) :
+    Algebra.adjoin (𝒜 0) { mk (𝒜 := 𝒜) (x := .powers f)
+      ⟨a * d, ⟨∏ i, x i ^ ai i, hai ▸ SetLike.fintype_prod_pow_mem_graded hxd⟩,
+        ⟨f ^ a, SetLike.pow_mem_graded a hf⟩, by use a⟩ |
+        (a : ℕ) (ai : ι → ℕ) (hai : ∑ i, ai i * dx i = a * d) (_ : ∀ i, ai i ≤ d) } = ⊤ := by
+  classical
+  rw [← top_le_iff]
+  show ⊤ ≤ (Algebra.adjoin (𝒜 0) _).toSubmodule
+  rw [← HomogeneousLocalization.Away.span_monomial_eq_top 𝒜 f d hf ι
+    x inferInstance hx dx hxd, Submodule.span_le]
+  rintro _ ⟨a, ai, hai, rfl⟩
+  have H₀ : (a - ∑ i : ι, dx i * (ai i / d)) * d = ∑ k : ι, (ai k % d) • dx k := by
+    rw [tsub_mul, ← hai]
+    conv => enter [1, 1, 2, i]; rw [← Nat.mod_add_div (ai i) d]
+    simp_rw [add_mul, Finset.sum_add_distrib, mul_assoc, ← Finset.mul_sum, mul_comm d, mul_comm (_ / _)]
+    simp only [add_tsub_cancel_right, smul_eq_mul]
+  have H : mk (𝒜 := 𝒜) (x := .powers f)
+      ⟨a * d, ⟨∏ i, x i ^ ai i, hai ▸ SetLike.fintype_prod_pow_mem_graded hxd⟩,
+        ⟨f ^ a, SetLike.pow_mem_graded a hf⟩, by use a⟩ =
+      mk (𝒜 := 𝒜) (x := .powers f)
+        ⟨(a - ∑ i : ι, dx i * (ai i / d)) * d,
+          ⟨∏ i, x i ^ (ai i % d), H₀ ▸ SetLike.fintype_prod_pow_mem_graded hxd⟩,
+          ⟨f ^ (a - ∑ i, dx i * (ai i / d)), SetLike.pow_mem_graded _ hf⟩, by exact ⟨_, rfl⟩⟩ *
+      ∏ i, mk ⟨_, ⟨x i ^ d, SetLike.pow_mem_graded d (hxd i)⟩,
+        ⟨f ^ dx i, by convert SetLike.pow_mem_graded (dx i) hf using 2; simpa using mul_comm _ _⟩,
+        by exact ⟨_, rfl⟩⟩ ^ (ai i / d) := by
+    apply (show Function.Injective (algebraMap (Away 𝒜 f) (Localization.Away f))
+      from val_injective _)
+    simp only [map_pow, map_prod, map_mul]
+    simp only [HomogeneousLocalization.algebraMap_apply, val_mk,
+      Localization.mk_pow, Localization.mk_prod, Localization.mk_mul,
+      ← Finset.prod_mul_distrib, ← pow_add, ← pow_mul]
+    congr
+    · ext i
+      congr
+      exact Eq.symm (Nat.mod_add_div (ai i) d)
+    · simp only [SubmonoidClass.mk_pow, SubmonoidClass.coe_finset_prod, ← pow_add, ← pow_mul,
+        Finset.prod_pow_eq_pow_sum]
+      rw [tsub_add_cancel_of_le]
+      rw [← mul_le_mul_iff_of_pos_right hd, ← hai, Finset.sum_mul]
+      simp_rw [mul_comm (ai _), mul_assoc]
+      gcongr
+      exact Nat.div_mul_le_self (ai _) d
+  rw [H, SetLike.mem_coe]
+  apply (Algebra.adjoin (𝒜 0) _).mul_mem
+  · apply Algebra.subset_adjoin
+    refine ⟨a - ∑ i : ι, dx i * (ai i / d), (ai · % d), H₀.symm, ?_, rfl⟩
+    exact fun i ↦ (Nat.mod_lt _ hd).le
+  apply prod_mem
+  · rintro j -
+    apply pow_mem
+    apply Algebra.subset_adjoin
+    refine ⟨dx j, Pi.single j d, ?_, ?_, ?_⟩
+    · simp [Pi.single_apply, mul_comm]
+    · aesop (add simp Pi.single_apply)
+    ext
+    simp [Pi.single_apply]
+
+lemma HomogeneousLocalization.Away.finiteType [Algebra.FiniteType (𝒜 0) S]
+    (f : S) (d : ℕ) (hf : f ∈ 𝒜 d) (hd : 0 < d) :
+    Algebra.FiniteType (𝒜 0) (Away 𝒜 f) := by
+  constructor
+  obtain ⟨ι, x, _, hx, hx'⟩ := FG_by_homogeneous 𝒜
+  choose dx hdx hxd using hx'
+  rw [← HomogeneousLocalization.Away.adjoin_monomial_eq_top 𝒜 f d hf hd ι x inferInstance hx dx hxd,
+    Subalgebra.fg_def]
+  refine ⟨_, ?_, rfl⟩
+  let b := ∑ i, dx i
+  let s : Set ((Fin (b + 1)) × (ι → Fin (d + 1))) := { ai | ∑ i, (ai.2 i).1 * dx i = ai.1 * d }
+  let f : s → Away 𝒜 f := fun ai ↦ mk (𝒜 := 𝒜) (x := .powers f)
+      ⟨ai.1.1 * d, ⟨∏ i, x i ^ (ai.1.2 i).1,
+        by convert SetLike.fintype_prod_pow_mem_graded hxd; exact ai.2.symm⟩,
+        ⟨f ^ ai.1.1.1, SetLike.pow_mem_graded ai.1.1.1 hf⟩, by exact ⟨_, rfl⟩⟩
+  apply (Set.finite_range f).subset
+  rintro _ ⟨a, ai, hai, hai', rfl⟩
+  refine ⟨⟨⟨⟨a, ?_⟩, fun i ↦ ⟨ai i, (hai' i).trans_lt d.lt_succ_self⟩⟩, hai⟩, rfl⟩
+  rw [Nat.lt_succ, ← mul_le_mul_iff_of_pos_right hd, ← hai, Finset.sum_mul]
+  simp_rw [mul_comm _ d]
+  gcongr
+  exact hai' _
+
 lemma useful (n : ℕ) : n = 0 ∨ ∃ m, n = m + 1 := by
   cases n with
   | zero => tauto
@@ -456,11 +540,12 @@ theorem projective_implies_proper_aux
     rw [map_div₀]
     -- the below sorry: use foounit which says it's a unit in K and hence
     -- nonzero and hence its valuation is positive.
-    rw [div_le_iff₀ sorry, one_mul]
-    rw [← pow_le_pow_iff_left₀ (n := d j * ∏ i, d i) zero_le' zero_le' <| by
-      -- product of positive things is nonzero
-      sorry
-    ]
+    rw [div_le_iff₀ (by
+      rw [Valuation.map_pow]
+      apply pow_pos ((Valuation.pos_iff _).mpr (IsUnit.ne_zero foounit))
+      ), one_mul]
+    rw [← pow_le_pow_iff_left₀ (n := d j * ∏ i, d i) zero_le' zero_le' <|
+      (mul_pos (hdi j) (Finset.prod_pos (fun i _ => hdi i))).ne.symm]
     convert_to (∏ i, ψ i ^ (d i * ai i)) * ψ i0 ^ (d i0 * a * (d j - 1)) ≤ _
     · simp only [ψ, ← map_pow, ← map_prod, ← map_mul]
       congr 2
