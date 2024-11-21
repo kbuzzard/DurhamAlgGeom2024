@@ -162,3 +162,18 @@ instance : UniversallyClosed (Proj.toSpecZero 𝒜) := by
     TopologicalSpace.Opens.coe_mk, TopologicalSpace.Opens.coe_top] at this
   rw [← isCompact_univ_iff, ← this]
   exact isCompact_iUnion H
+
+instance : LocallyOfFiniteType (Proj.toSpecZero 𝒜) := by
+  obtain ⟨ι, x, _, hx, hx'⟩ := FG_by_homogeneous 𝒜
+  choose d hd hxd using hx'
+  rw [IsLocalAtSource.iff_of_iSup_eq_top (P := @LocallyOfFiniteType) _
+    (Proj.iSup_basicOpen_eq_top' 𝒜 x (fun i ↦ ⟨_, hxd i⟩) hx)]
+  intro i
+  rw [← MorphismProperty.cancel_left_of_respectsIso (P := @LocallyOfFiniteType)
+    (Proj.basicOpenIsoSpec 𝒜 (x i) (hxd i) (hd i)).inv, ← Category.assoc, ← Proj.awayι,
+    Proj.awayι_toSpecZero, HasRingHomProperty.Spec_iff (P := @LocallyOfFiniteType)]
+  exact HomogeneousLocalization.Away.finiteType _ _ _ (hxd i) (hd i)
+
+instance : Scheme.IsSeparated (Proj 𝒜) := sorry -- in mathlib
+
+instance : IsProper (Proj.toSpecZero 𝒜) where
