@@ -541,11 +541,12 @@ theorem projective_implies_proper_aux
     rw [map_div₀]
     -- the below sorry: use foounit which says it's a unit in K and hence
     -- nonzero and hence its valuation is positive.
-    rw [div_le_iff₀ sorry, one_mul]
-    rw [← pow_le_pow_iff_left₀ (n := d j * ∏ i, d i) zero_le' zero_le' <| by
-      -- product of positive things is nonzero
-      sorry
-    ]
+    rw [div_le_iff₀ (by
+      rw [Valuation.map_pow]
+      apply pow_pos ((Valuation.pos_iff _).mpr (IsUnit.ne_zero foounit))
+      ), one_mul]
+    rw [← pow_le_pow_iff_left₀ (n := d j * ∏ i, d i) zero_le' zero_le' <|
+      (mul_pos (hdi j) (Finset.prod_pos (fun i _ => hdi i))).ne.symm]
     convert_to (∏ i, ψ i ^ (d i * ai i)) * ψ i0 ^ (d i0 * a * (d j - 1)) ≤ _
     · simp only [ψ, ← map_pow, ← map_prod, ← map_mul]
       congr 2
