@@ -318,30 +318,6 @@ theorem Span_monomial_eq_top (f : S) (d : ℕ) (hf : f ∈ 𝒜 d) (ι : Type) (
     | h_add =>
       simp_all [mul_add]
 
--- theorem extracted_1 {R₀ S : Type} [inst : CommRing R₀] [inst_1 : CommRing S] [inst_2 : Algebra R₀ S]
---   (𝒜 : ℕ → Submodule R₀ S) [inst_3 : GradedAlgebra 𝒜] {A : Type} [inst_4 : CommRing A] [inst_5 : IsDomain A]
---   [inst_6 : ValuationRing A] {K : Type} [inst_7 : Field K] [inst_8 : Algebra A K] [inst_9 : IsFractionRing A K]
---   (ι : Type) [inst_10 : Fintype ι] [DecidableEq ι] (x : ι → S) (h2 : Algebra.adjoin (↥(𝒜 0)) (Set.range x) = ⊤) (j : ι)
---   (φ : Away 𝒜 (x j) →+* K) (d : ι → ℕ) (hdi : ∀ (i : ι), 0 < d i) (hxdi : ∀ (i : ι), x i ∈ 𝒜 (d i)) :
---   let ψ := fun i ↦
---     (ValuationRing.valuation A K)
---       (φ (mk { deg := d j * d i, num := ⟨x i ^ d j, ⋯⟩, den := ⟨x j ^ d i, ⋯⟩, den_mem := ⋯ }) ^
---         ∏ k ∈ Finset.univ.erase i, d k);
---   Nonempty ι →
---     ∀ (foo_1 : (Finset.image ψ Finset.univ).Nonempty),
---       let Kmax := (Finset.image ψ Finset.univ).max' foo_1;
---       ∀ (i0 : ι),
---         ψ i0 = Kmax →
---           (∀ (j : ι), ψ j ≤ ψ i0) →
---             Kmax ≠ 0 →
---               0 < Kmax →
---                 IsLocalization
---                     (Submonoid.powers
---                       (mk { deg := d j * d i0, num := ⟨x i0 ^ d j, ⋯⟩, den := ⟨x j ^ d i0, ⋯⟩, den_mem := ⋯ }))
---                     (Away 𝒜 (x j * x i0)) →
---                   ∃ φ',
---                     φ'.comp (map2 𝒜 ⋯ ⋯) = φ ∧ Set.range ⇑(φ'.comp (map2 𝒜 ⋯ ⋯)) ⊆ Set.range ⇑(algebraMap A K) := sorry
-
 theorem Localization.mk_prod {R : Type*} [CommRing R] {S : Submonoid R} {ι} (t : Finset ι)
     (f : ι → R) (s : ι → S) :
     ∏ i in t, Localization.mk (f i) (s i) = Localization.mk (∏ i in t, f i) (∏ i in t, s i) := by
@@ -409,99 +385,11 @@ theorem projective_implies_proper_aux
   have foo := HomogeneousLocalization.Away.isLocalization_mul 𝒜 (x j) (x i0) (d j) (d i0)
     (hxdi j) (hxdi i0) (hdi _).ne' (hdi _).ne'
   letI := awayAlgebra 𝒜 (x j) (x i0) (d i0) (hxdi i0)
-  let φ' := @IsLocalization.Away.lift _ _ _ _ _ _ _ _ foo φ ?_
-  · use φ'
-    use IsLocalization.Away.AwayMap.lift_comp ..
-    rintro _ ⟨sx, rfl⟩
-    rw [Set.mem_range, ← ValuationRing.mem_integer_iff]
-    rw [Valuation.mem_integer_iff]
-    have := Span_monomial_eq_top 𝒜 (x i0) (d i0) (hxdi i0) ι
-      x inferInstance h2 d hxdi
-    letI inst1 : Algebra (𝒜 0) (Away 𝒜 (x i0)) := inferInstance
-    letI inst2 : Module (𝒜 0) (Away 𝒜 (x i0)) := Algebra.toModule
-    have foo2 : sx ∈ (⊤ : Submodule (𝒜 0) (Away 𝒜 (x i0))) := Submodule.mem_top
-    rw [← this] at foo2
-    induction foo2 using Submodule.span_induction with
-    | mem x1 h =>
-      obtain ⟨a, ai, hai, rfl⟩ := h
-      suffices (ValuationRing.valuation A K)
-          (φ (mk {deg := a * d i0 * d j,
-                  num := ⟨(∏ i : ι, x i ^ ai i) * (x i0) ^ (a * (d j - 1)), sorry⟩,
-                  den := ⟨(x j) ^ (a * d i0), sorry⟩,
-                  den_mem := sorry}) /
-           (φ (mk {deg := d i0 * d j,
-                   num := ⟨(x i0) ^ d j, sorry⟩,
-                   den := ⟨(x j) ^ (d i0), sorry⟩,
-                   den_mem := sorry})) ^ a) ≤ 1 by
-        convert this
-        -- proof: multiply it out
-        sorry
-      rw [map_div₀]
-      rw [div_le_iff₀ sorry, one_mul]
-      rw [← pow_le_pow_iff_left₀ (n := d j * ∏ i, d i) sorry sorry sorry]
-      convert_to (∏ i, ψ i ^ (d i * ai i)) * ψ i0 ^ (d i0 * a * (d j - 1)) ≤ _
-      · simp only [ψ, ← map_pow, ← map_prod, ← map_mul]
-        congr 2
-        apply (show Function.Injective (algebraMap (Away 𝒜 (x j)) (Localization.Away (x j)))
-          from val_injective _)
-        simp only [map_pow, map_prod, map_mul]
-        simp only [HomogeneousLocalization.algebraMap_apply, val_mk,
-          Localization.mk_pow, Localization.mk_prod, Localization.mk_mul]
-        rw [Localization.mk_eq_mk_iff, Localization.r_iff_exists]
-        use 1
-        simp only [OneMemClass.coe_one, SubmonoidClass.mk_pow, ← pow_mul, Submonoid.coe_mul,
-          SubmonoidClass.coe_finset_prod, one_mul]
-        simp_rw [Finset.mul_prod_erase Finset.univ d (h := Finset.mem_univ _),
-          mul_assoc, ← mul_assoc (Finset.prod ..),
-          Finset.prod_erase_mul Finset.univ d (h := Finset.mem_univ _)]
-        rw [Finset.prod_pow_eq_pow_sum, ← pow_add, mul_pow, ← Finset.prod_pow]
-        simp_rw [← pow_mul]
-        congr 3
-        · simp_rw [mul_assoc, ← Finset.mul_sum, mul_comm (d _) (ai _), hai]
-          have : d j ≠ 0 := (hdi j).ne'
-          revert this
-          cases d j
-          · simp
-          · intro _
-            simp
-            ring
-        · ext i
-          congr 1
-          ring
-        · ring
-      · trans (∏ i : ι, ψ i0 ^ (d i * ai i)) * ψ i0 ^ (d i0 * a * (d j - 1))
-        · gcongr
-          · exact zero_le'
-          · exact hi0 _
-        · rw [Finset.prod_pow_eq_pow_sum, ← pow_add]
-          convert_to (ψ i0) ^ (d i0 * a * d j) ≤ _
-          · congr 1
-            simp_rw [mul_comm (d _) (ai _), hai]
-            have : d j ≠ 0 := (hdi j).ne'
-            revert this
-            cases d j
-            · simp
-            · intro _
-              simp
-              ring
-          · apply le_of_eq
-            simp only [ψ, ← map_pow, ← map_prod, ← map_mul]
-            congr 2
-            rw [← pow_mul, mul_assoc, ← mul_assoc,
-              Finset.prod_erase_mul Finset.univ d (h := Finset.mem_univ _),
-              mul_left_comm, pow_mul]
-            congr 1
-            · ext; simp
-            · exact mul_comm _ _
-    | zero => simp
-    | add x y hx hy hhx hhy =>
-      simp only [RingHom.coe_comp, Function.comp_apply, map_add, ge_iff_le]
-      transitivity
-      refine Valuation.map_add (ValuationRing.valuation A K) _ _
-      rw [sup_le_iff]
-      exact ⟨hhx, hhy⟩
-    | smul a x hx _ => sorry
-  · unfold ψ at hi1
+  have foounit : IsUnit (φ (mk { deg := d j * d i0,
+                                 num := ⟨x i0 ^ d j, SetLike.pow_mem_graded (d j) (hxdi i0)⟩,
+                                 den := ⟨x j ^ d i0, mul_comm (d j) (d i0) ▸ SetLike.pow_mem_graded (d i0) ( hxdi j)⟩,
+                                 den_mem := ⟨d i0, rfl⟩})) := by
+    unfold ψ at hi1
     apply Ne.isUnit
     intro rid
     rw [rid] at hi1
@@ -512,4 +400,116 @@ theorem projective_implies_proper_aux
       not_exists, not_and]
     intro k _ hk
     exact hdi k |>.ne' hk
+  let φ' := @IsLocalization.Away.lift _ _ _ _ _ _ _ _ foo φ foounit
+  have hφ' : ∀ s, φ' _ = _ := @IsLocalization.Away.AwayMap.lift_eq _ _ _ _ _ _ _ _ foo _ foounit
+  use φ'
+  use IsLocalization.Away.AwayMap.lift_comp ..
+  rintro _ ⟨sx, rfl⟩
+  rw [Set.mem_range, ← ValuationRing.mem_integer_iff]
+  rw [Valuation.mem_integer_iff]
+  have := Span_monomial_eq_top 𝒜 (x i0) (d i0) (hxdi i0) ι
+    x inferInstance h2 d hxdi
+  letI inst1 : Algebra (𝒜 0) (Away 𝒜 (x i0)) := inferInstance
+  letI inst2 : Module (𝒜 0) (Away 𝒜 (x i0)) := Algebra.toModule
+  have foo2 : sx ∈ (⊤ : Submodule (𝒜 0) (Away 𝒜 (x i0))) := Submodule.mem_top
+  rw [← this] at foo2
+  induction foo2 using Submodule.span_induction with
+  | mem x1 h =>
+    obtain ⟨a, ai, hai, rfl⟩ := h
+    suffices (ValuationRing.valuation A K)
+        (φ (mk {deg := a * d i0 * d j,
+                num := ⟨(∏ i : ι, x i ^ ai i) * (x i0) ^ (a * (d j - 1)), by
+                  have this1 := SetLike.fintype_prod_pow_mem_graded (v := ai) (i := d) hxdi
+                  have this2 := SetLike.pow_mem_graded (a * (d j - 1)) (hxdi i0)
+                  have := SetLike.mul_mem_graded this1 this2
+                  convert this using 2
+                  simp
+                  rw [hai]
+                  have hdj : (d j ≠ 0) := (hdi j).ne'
+                  revert hdj
+                  cases (d j)
+                  · simp
+                  · intro _
+                    simp
+                    ring
+                ⟩,
+                den := ⟨(x j) ^ (a * d i0), sorry⟩,
+                den_mem := ⟨_, rfl⟩}) /
+          (φ (mk {deg := d j * d i0,
+                  num := ⟨(x i0) ^ d j, sorry⟩,
+                  den := ⟨(x j) ^ (d i0), sorry⟩,
+                  den_mem := sorry})) ^ a) ≤ 1 by
+      convert this
+      rw [eq_div_iff <| by rw [←isUnit_iff_ne_zero]; exact IsUnit.pow _ foounit]
+      rw [← hφ', ← hφ']
+      simp only [RingHom.coe_comp, Function.comp_apply]
+      rw [← map_pow, ← map_mul]
+      congr
+      -- Kevin is working on this
+      sorry
+    rw [map_div₀]
+    rw [div_le_iff₀ sorry, one_mul]
+    rw [← pow_le_pow_iff_left₀ (n := d j * ∏ i, d i) sorry sorry sorry]
+    convert_to (∏ i, ψ i ^ (d i * ai i)) * ψ i0 ^ (d i0 * a * (d j - 1)) ≤ _
+    · simp only [ψ, ← map_pow, ← map_prod, ← map_mul]
+      congr 2
+      apply (show Function.Injective (algebraMap (Away 𝒜 (x j)) (Localization.Away (x j)))
+        from val_injective _)
+      simp only [map_pow, map_prod, map_mul]
+      simp only [HomogeneousLocalization.algebraMap_apply, val_mk,
+        Localization.mk_pow, Localization.mk_prod, Localization.mk_mul]
+      rw [Localization.mk_eq_mk_iff, Localization.r_iff_exists]
+      use 1
+      simp only [OneMemClass.coe_one, SubmonoidClass.mk_pow, ← pow_mul, Submonoid.coe_mul,
+        SubmonoidClass.coe_finset_prod, one_mul]
+      simp_rw [Finset.mul_prod_erase Finset.univ d (h := Finset.mem_univ _),
+        mul_assoc, ← mul_assoc (Finset.prod ..),
+        Finset.prod_erase_mul Finset.univ d (h := Finset.mem_univ _)]
+      rw [Finset.prod_pow_eq_pow_sum, ← pow_add, mul_pow, ← Finset.prod_pow]
+      simp_rw [← pow_mul]
+      congr 3
+      · simp_rw [mul_assoc, ← Finset.mul_sum, mul_comm (d _) (ai _), hai]
+        have : d j ≠ 0 := (hdi j).ne'
+        revert this
+        cases d j
+        · simp
+        · intro _
+          simp
+          ring
+      · ext i
+        congr 1
+        ring
+      · ring
+    · trans (∏ i : ι, ψ i0 ^ (d i * ai i)) * ψ i0 ^ (d i0 * a * (d j - 1))
+      · gcongr
+        · exact zero_le'
+        · exact hi0 _
+      · rw [Finset.prod_pow_eq_pow_sum, ← pow_add]
+        convert_to (ψ i0) ^ (d i0 * a * d j) ≤ _
+        · congr 1
+          simp_rw [mul_comm (d _) (ai _), hai]
+          have : d j ≠ 0 := (hdi j).ne'
+          revert this
+          cases d j
+          · simp
+          · intro _
+            simp
+            ring
+        · apply le_of_eq
+          simp only [ψ, ← map_pow, ← map_prod, ← map_mul]
+          congr 2
+          rw [← pow_mul, mul_assoc, ← mul_assoc,
+            Finset.prod_erase_mul Finset.univ d (h := Finset.mem_univ _),
+            mul_left_comm, pow_mul]
+          congr 1
+          rw [mul_comm]
+  | zero => simp
+  | add x y hx hy hhx hhy =>
+    simp only [RingHom.coe_comp, Function.comp_apply, map_add, ge_iff_le]
+    transitivity
+    refine Valuation.map_add (ValuationRing.valuation A K) _ _
+    rw [sup_le_iff]
+    exact ⟨hhx, hhy⟩
+  | smul a x hx _ => sorry
+
 end statement
