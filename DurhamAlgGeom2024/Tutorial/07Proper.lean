@@ -411,9 +411,23 @@ theorem projective_implies_proper_aux
     obtain ⟨a, ai, hai, rfl⟩ := h
     suffices (ValuationRing.valuation A K)
         (φ (mk {deg := a * d i0 * d j,
-                num := ⟨(∏ i : ι, x i ^ ai i) * (x i0) ^ (a * (d j - 1)), sorry⟩,
+                num := ⟨(∏ i : ι, x i ^ ai i) * (x i0) ^ (a * (d j - 1)), by
+                  have this1 := SetLike.fintype_prod_pow_mem_graded (v := ai) (i := d) hxdi
+                  have this2 := SetLike.pow_mem_graded (a * (d j - 1)) (hxdi i0)
+                  have := SetLike.mul_mem_graded this1 this2
+                  convert this using 2
+                  simp
+                  rw [hai]
+                  have hdj : (d j ≠ 0) := (hdi j).ne'
+                  revert hdj
+                  cases (d j)
+                  · simp
+                  · intro _
+                    simp
+                    ring
+                ⟩,
                 den := ⟨(x j) ^ (a * d i0), sorry⟩,
-                den_mem := sorry}) /
+                den_mem := ⟨_, rfl⟩}) /
           (φ (mk {deg := d j * d i0,
                   num := ⟨(x i0) ^ d j, sorry⟩,
                   den := ⟨(x j) ^ (d i0), sorry⟩,
