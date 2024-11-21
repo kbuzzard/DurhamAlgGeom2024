@@ -186,6 +186,12 @@ lemma val_map2_mk (n a i hi) : (map2 𝒜 hg hx (mk ⟨n, a, ⟨f ^ i, hi⟩, �
   simp [hx]
   congr
 
+lemma map2_fromZeroRingHom (a) :
+    map2 𝒜 hg hx (fromZeroRingHom 𝒜 _ a) = fromZeroRingHom 𝒜 _ a := by
+  ext
+  convert val_map2_mk 𝒜 hg hx 0 a 0 (by simpa using SetLike.GradedOne.one_mem) <;>
+    simp [fromZeroRingHom]; rfl
+
 /-
 
 ## We now prove part (2)
