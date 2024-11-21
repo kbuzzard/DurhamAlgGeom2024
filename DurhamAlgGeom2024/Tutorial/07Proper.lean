@@ -390,7 +390,31 @@ theorem projective_implies_proper_aux
   letI := awayAlgebra 𝒜 (x j) (x i0) (d i0) (hxdi i0)
   let φ' := @IsLocalization.Away.lift _ _ _ _ _ _ _ _ foo φ ?_
   · use φ'
-    sorry
+    use IsLocalization.Away.AwayMap.lift_comp ..
+    rintro _ ⟨sx, rfl⟩
+    rw [Set.mem_range, ← ValuationRing.mem_integer_iff]
+    rw [Valuation.mem_integer_iff]
+    have := Span_monomial_eq_top 𝒜 (x i0) (d i0) (hxdi i0) ι
+      x inferInstance h2 d hxdi
+    have foo2 : sx ∈ (⊤ : Submodule (𝒜 0) (Away 𝒜 (x i0))) := by trivial
+    rw [← this] at foo2
+    induction foo2 using Submodule.span_induction with
+    | mem x1 h =>
+      obtain ⟨a, ai, hai, rfl⟩ := h
+      sorry
+    | zero => simp
+    | add x y hx hy _ _ => sorry
+    | smul a x hx _ => sorry
   · unfold ψ at hi1
-    sorry
+    apply Ne.isUnit
+    intro rid
+    rw [rid] at hi1
+
+    simp only [map_pow, map_zero] at hi1
+    rw [zero_pow] at hi1
+    · exact hKmax.ne' hi1.symm
+    simp only [ne_eq, Finset.prod_eq_zero_iff, Finset.mem_erase, Finset.mem_univ, and_true,
+      not_exists, not_and]
+    intro k _ hk
+    exact hdi k |>.ne' hk
 end statement
