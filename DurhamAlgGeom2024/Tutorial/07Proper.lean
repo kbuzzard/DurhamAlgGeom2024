@@ -355,10 +355,10 @@ theorem projective_implies_proper_aux
   set Kmax := Finset.max' (Finset.image ψ Finset.univ) foo
   have : Kmax ∈ _ := Finset.max'_mem (Finset.image ψ Finset.univ) foo
   simp only [Finset.mem_image, Finset.mem_univ, true_and] at this
-  obtain ⟨i0, hi0⟩ := this
+  obtain ⟨i0, hi1⟩ := this
   have hi0 : ∀ (j : ι), ψ j ≤ ψ i0 := by
     intro j
-    rw [hi0]
+    rw [hi1]
     exact Finset.le_max' (Finset.image ψ Finset.univ) (ψ j) (by simp)
   use x i0, d i0, hdi i0, hxdi i0
   have hKmax : Kmax ≠ 0 := by
@@ -385,6 +385,12 @@ theorem projective_implies_proper_aux
     convert Localization.mk_self _
     rfl
   have hKmax : 0 < Kmax := zero_lt_iff.mpr hKmax
-  sorry
-
+  have foo := HomogeneousLocalization.Away.isLocalization_mul 𝒜 (x j) (x i0) (d j) (d i0)
+    (hxdi j) (hxdi i0) (hdi _).ne' (hdi _).ne'
+  letI := awayAlgebra 𝒜 (x j) (x i0) (d i0) (hxdi i0)
+  let φ' := @IsLocalization.Away.lift _ _ _ _ _ _ _ _ foo φ ?_
+  · use φ'
+    sorry
+  · unfold ψ at hi1
+    sorry
 end statement
