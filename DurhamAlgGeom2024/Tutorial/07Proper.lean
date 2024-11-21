@@ -138,7 +138,54 @@ variable (φ₀ : (𝒜 0) →+* A)
 variable (φ : (Away 𝒜 f) →+* K)
 variable (hcomm : (algebraMap A K).comp φ₀ = φ.comp (fromZeroRingHom 𝒜 _))
 
-theorem projective_implies_proper_aux : ∃ (x₀ : S) (e : ℕ) (he : 0 < e)
+/-
+projective_implies_proper_aux {R₀ S : Type} [CommRing R₀] [CommRing S] [Algebra R₀ S] (𝒜 : ℕ → Submodule R₀ S)
+  [GradedAlgebra 𝒜] [Algebra.FiniteType (↥(𝒜 0)) S] {d : ℕ} {f : S} (hf : f ∈ 𝒜 d) {A : Type} [CommRing A] [IsDomain A]
+  [ValuationRing A] {K : Type} [Field K] [Algebra A K] [IsFractionRing A K] (φ : Away 𝒜 f →+* K) (hd : 0 < d) :
+  ∃ x₀ e,
+    ∃ (_ : 0 < e) (h₀ : x₀ ∈ 𝒜 e),
+      ∃ φ', φ'.comp (map2 𝒜 h₀ ⋯) = φ ∧ Set.range ⇑(φ'.comp (map2 𝒜 hf ⋯)) ⊆ Set.range ⇑(algebraMap A K)
+-/
+
+omit [GradedAlgebra 𝒜] [Algebra.FiniteType (↥(𝒜 0)) S] in
+lemma away_zero_subsingleton : Subsingleton (Away 𝒜 0) := by
+  apply HomogeneousLocalization.subsingleton
+  use 1
+  simp
+
+omit [Algebra.FiniteType (↥(𝒜 0)) S] in
+lemma f_ne_zero_of_away_ringHom (φ : Away 𝒜 f →+* K) : f ≠ 0 := by
+  rintro rfl
+  have : Subsingleton (Away 𝒜 0) :=
+    away_zero_subsingleton 𝒜
+  have : Subsingleton K := RingHom.codomain_trivial φ
+  have : Nontrivial K := CommGroupWithZero.toNontrivial
+  exact false_of_nontrivial_of_subsingleton K
+
+omit [Algebra.FiniteType (↥(𝒜 0)) S] in
+lemma ι_nonempty (hd : 0 < d) (ι : Type) (x : ι → S)
+    {f : S} (hf : f ∈ 𝒜 d) (φ : Away 𝒜 f →+* K)
+    (hι : Algebra.adjoin (↥(𝒜 0)) (Set.range x) = ⊤) : Nonempty ι := by
+  suffices ¬ IsEmpty ι by exact not_isEmpty_iff.mp this
+  intro hempty
+  have hf0 : f ≠ 0 := by exact f_ne_zero_of_away_ringHom 𝒜 φ
+  have := Algebra.adjoin_empty (𝒜 0) S
+  have range_empty : Set.range x = ∅ := by
+    rw [Set.eq_empty_iff_forall_not_mem]
+    intro s ⟨i, hi⟩
+    exact IsEmpty.false i
+  rw [range_empty] at hι
+  rw [this] at hι
+  have hf2 : f ∈ (⊤ : Subalgebra (𝒜 0) S) := by exact trivial
+  rw [← hι] at hf2
+  suffices d = 0 by omega
+  refine DirectSum.degree_eq_of_mem_mem 𝒜 hf ?_ hf0
+  rw [Algebra.mem_bot] at hf2
+  obtain ⟨⟨g, hg1⟩, hg⟩ := hf2
+  rw [← hg]
+  exact hg1
+
+theorem projective_implies_proper_aux (hd : 0 < d) : ∃ (x₀ : S) (e : ℕ) (he : 0 < e)
     (h₀ : x₀ ∈ 𝒜 e)
     (φ' : Away 𝒜 (f * x₀) →+* K),
     (φ'.comp (map2 𝒜 h₀ rfl) = φ) ∧
@@ -153,21 +200,17 @@ theorem projective_implies_proper_aux : ∃ (x₀ : S) (e : ℕ) (he : 0 < e)
       den := ⟨f^(di i) , mul_comm d (di i) ▸ SetLike.pow_mem_graded (di i) ( hf)⟩
       den_mem := ⟨_, rfl⟩
     }))^ ∏ j in Finset.univ.erase i, di j
-  cases isEmpty_or_nonempty ι
-  · sorry
-  · have foo : (Finset.image ψ Finset.univ).Nonempty := by rwa [Finset.image_nonempty, Finset.univ_nonempty_iff]
-    set Kmax := Finset.max' (Finset.image ψ Finset.univ) foo
-    have : Kmax ∈ _ := Finset.max'_mem (Finset.image ψ Finset.univ) foo
-    simp only [Finset.mem_image, Finset.mem_univ, true_and] at this
-    obtain ⟨i0, hi0⟩ := this
-    have hi0 : ∀ (j : ι), ψ j ≤ ψ i0 := by
-      intro j
-      rw [hi0]
-      exact Finset.le_max' (Finset.image ψ Finset.univ) (ψ j) (by simp)
-    use x i0
-    use di i0
-    use hdi i0
-    use hxdi i0
-    sorry
+  have hιnonempty : Nonempty ι := by exact ι_nonempty 𝒜 hd ι x hf φ h2
+  have foo : (Finset.image ψ Finset.univ).Nonempty := by rwa [Finset.image_nonempty, Finset.univ_nonempty_iff]
+  set Kmax := Finset.max' (Finset.image ψ Finset.univ) foo
+  have : Kmax ∈ _ := Finset.max'_mem (Finset.image ψ Finset.univ) foo
+  simp only [Finset.mem_image, Finset.mem_univ, true_and] at this
+  obtain ⟨i0, hi0⟩ := this
+  have hi0 : ∀ (j : ι), ψ j ≤ ψ i0 := by
+    intro j
+    rw [hi0]
+    exact Finset.le_max' (Finset.image ψ Finset.univ) (ψ j) (by simp)
+  use x i0, di i0, hdi i0, hxdi i0
+  sorry
 
 end statement
