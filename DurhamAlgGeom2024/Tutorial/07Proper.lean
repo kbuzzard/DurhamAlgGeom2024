@@ -109,7 +109,6 @@ stuff in degree not zero but S_{(f)} is only degree 0 stuff)
 -/
 
 variable {d : ℕ}
-variable {f : S} (hf : f ∈ 𝒜 d)
 
 --#synth Algebra (𝒜 0) (Away 𝒜 f)
 
@@ -129,8 +128,6 @@ The diagram in the question
 -/
 
 variable (φ₀ : (𝒜 0) →+* A)
-variable (φ : (Away 𝒜 f) →+* K)
-variable (hcomm : (algebraMap A K).comp φ₀ = φ.comp (fromZeroRingHom 𝒜 _))
 
 /-
 projective_implies_proper_aux {R₀ S : Type} [CommRing R₀] [CommRing S] [Algebra R₀ S] (𝒜 : ℕ → Submodule R₀ S)
@@ -147,6 +144,7 @@ lemma away_zero_subsingleton : Subsingleton (Away 𝒜 0) := by
   use 1
   simp
 
+variable {f : S} (hf : f ∈ 𝒜 d) in
 lemma f_ne_zero_of_away_ringHom (φ : Away 𝒜 f →+* K) : f ≠ 0 := by
   rintro rfl
   have : Subsingleton (Away 𝒜 0) :=
@@ -322,6 +320,7 @@ theorem projective_implies_proper_aux
     (h2 : Algebra.adjoin (↥(𝒜 0)) (Set.range x) = (⊤ : Subalgebra (𝒜 0) S))
     (j : ι)
     (φ : Away 𝒜 (x j) →+* K)
+    (hcomm : (algebraMap A K).comp φ₀ = φ.comp (fromZeroRingHom 𝒜 _))
     (d : ι → ℕ)
     (hdi : ∀ i, 0 < d i)
     (hxdi : ∀ i, x i ∈ 𝒜 (d i)) :
@@ -522,12 +521,27 @@ theorem projective_implies_proper_aux
     refine Valuation.map_add (ValuationRing.valuation A K) _ _
     rw [sup_le_iff]
     exact ⟨hhx, hhy⟩
-  | smul a x hx _ =>
+  | smul a x₀ hx hx1 =>
     -- a • x is (image of a in K) * x, which is (image of a in A) * x,
     -- and stuff in A has valuation <= 1. This involves a tricky diagram
     -- chase in practice though. Justus was thinking about this sorry
     rw [Algebra.smul_def]
-    -- Kevin is working on this sorry
-    sorry
+    simp only [RingHom.coe_comp, Function.comp_apply, map_mul, ge_iff_le]
+    refine mul_le_one' ?_ hx1
+    have foo1 : algebraMap (↥(𝒜 0)) (Away 𝒜 (x i0)) = fromZeroRingHom 𝒜 (.powers (x i0)) := rfl
+    rw [foo1]
+    rw [map2_fromZeroRingHom 𝒜 (hxdi j) (mul_comm (x j) (x i0))]
+    suffices fromZeroRingHom 𝒜 (Submonoid.powers (x j * x i0)) a =
+        map2 𝒜 (hxdi i0) rfl ((fromZeroRingHom 𝒜 (Submonoid.powers (x j))) a) by
+      rw [this]
+      unfold φ'
+      rw [hφ'1]
+      change (ValuationRing.valuation A K) (φ.comp (fromZeroRingHom 𝒜 (Submonoid.powers (x j))) a) ≤ 1
+      rw [← hcomm]
+      simp only [RingHom.coe_comp, Function.comp_apply]
+      rw [← Valuation.mem_integer_iff, ValuationRing.mem_integer_iff]
+      use φ₀ a
+    symm
+    exact map2_fromZeroRingHom 𝒜 (hxdi i0) rfl a
 
 end statement
