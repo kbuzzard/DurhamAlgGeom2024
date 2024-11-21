@@ -408,7 +408,7 @@ theorem projective_implies_proper_aux
     (d : ι → ℕ)
     (hdi : ∀ i, 0 < d i)
     (hxdi : ∀ i, x i ∈ 𝒜 (d i)) :
-    ∃ (x₀ : S) (e : ℕ) (he : 0 < e)
+    ∃ (x₀ : S) (e : ℕ) (_he : 0 < e)
       (h₀ : x₀ ∈ 𝒜 e)
       (φ' : Away 𝒜 ((x j) * x₀) →+* K),
       (φ'.comp (map2 𝒜 h₀ rfl) = φ) ∧
