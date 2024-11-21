@@ -86,9 +86,7 @@ theorem FG_by_homogeneous : ∃ (ι : Type) (x : ι → S) (_ : Fintype ι),
     (∀ i : ι, ∃ n : ℕ, 0 < n ∧ x i ∈ 𝒜 n) := by
   obtain ⟨ι₀, x, _, h1, h2⟩ := FG_by_homogeneous₀ 𝒜
   choose n hn using h2
-  use {i : ι₀ // 0 < n i}
-  use fun j ↦ x j.1
-  use inferInstance
+  use {i : ι₀ // 0 < n i}, fun j ↦ x j.1, inferInstance
   refine ⟨?_, ?_⟩
   · rw [← top_le_iff, ← h1]
     apply Algebra.adjoin_le
@@ -174,8 +172,7 @@ lemma ι_nonempty (hd : 0 < d) (ι : Type) (x : ι → S)
     rw [Set.eq_empty_iff_forall_not_mem]
     intro s ⟨i, hi⟩
     exact IsEmpty.false i
-  rw [range_empty] at hι
-  rw [this] at hι
+  rw [range_empty, this] at hι
   have hf2 : f ∈ (⊤ : Subalgebra (𝒜 0) S) := by exact trivial
   rw [← hι] at hf2
   suffices d = 0 by omega
@@ -265,13 +262,13 @@ theorem projective_implies_proper_aux
       specialize this i
       exact le_zero_iff.mp this
     unfold ψ at this
-    simp at this
+    simp only [map_pow, pow_eq_zero_iff', map_eq_zero, ne_eq] at this
     specialize this j
     suffices φ 1 = 0 by
-      simp at this
+      simp only [map_one, one_ne_zero] at this
     convert this.1
     ext
-    simp
+    simp only [val_one, val_mk]
     symm
     convert Localization.mk_self _
     rfl

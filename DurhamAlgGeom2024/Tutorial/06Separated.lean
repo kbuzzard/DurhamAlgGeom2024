@@ -142,14 +142,12 @@ lemma lemma2 : Set.range (map1 𝒜 (f := f) hx) ⊆ Set.range (val (𝒜 := �
   · simp [map1]
     dsimp at hb
     rw [Localization.awayLift_mk (hv:=lemma1' hx)]
-    rw [←Algebra.smul_def, Localization.mk_pow]
-    rw [Localization.smul_mk]
+    rw [←Algebra.smul_def, Localization.mk_pow, Localization.smul_mk]
     simp_rw [hx]
     rfl
   · apply SetLike.mul_mem_graded ha
     convert SetLike.pow_mem_graded _ hg
-  · rw [hx]
-    rw [mul_pow]
+  · rw [hx, mul_pow]
     apply SetLike.mul_mem_graded hb'
     convert SetLike.pow_mem_graded _ hg
 
@@ -213,7 +211,7 @@ lemma tensormap_surjective (hd:d ≠0) : Function.Surjective (tensormap 𝒜 hf 
       rw [this]
       cases d
       contradiction
-      simp
+      simp only [add_tsub_cancel_right, smul_eq_mul]
       ring⟩
     den := ⟨f^(j*(e+1)), by
       convert SetLike.pow_mem_graded _ hf using 2
@@ -231,18 +229,19 @@ lemma tensormap_surjective (hd:d ≠0) : Function.Surjective (tensormap 𝒜 hf 
     den_mem := ⟨_,rfl⟩
   }
   use (mk x0 ⊗ₜ[ℤ] mk y0)
-  simp [tensormap]
+  simp only [tensormap]
   ext
-  simp [map1]
-  rw [Localization.awayLift_mk (hv:=lemma1' rfl)]
-  rw [Localization.awayLift_mk (hv:=lemma1' (mul_comm _ _))]
-  simp [Localization.mk_mul, ← Localization.mk_one_eq_algebraMap, Localization.mk_pow]
-  rw [Localization.mk_eq_mk_iff]
-  rw [Localization.r_iff_exists]
+  simp only [AlgHom.toRingHom_eq_coe, RingHom.coe_coe, Algebra.TensorProduct.lift_tmul,
+    RingHom.toIntAlgHom_coe, val_mul, map2_spec', map1, RingHom.coe_comp, Function.comp_apply,
+    HomogeneousLocalization.algebraMap_apply, val_mk]
+  rw [Localization.awayLift_mk (hv:=lemma1' rfl),
+    Localization.awayLift_mk (hv:=lemma1' (mul_comm _ _))]
+  simp only [Localization.mk_mul, ← Localization.mk_one_eq_algebraMap, Localization.mk_pow]
+  rw [Localization.mk_eq_mk_iff, Localization.r_iff_exists]
   dsimp
   use 1
-  simp
+  simp only [OneMemClass.coe_one, one_mul]
   cases d
   contradiction
-  simp
+  simp only [add_tsub_cancel_right]
   ring
