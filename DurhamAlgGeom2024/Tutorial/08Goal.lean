@@ -276,8 +276,14 @@ lemma foo : ValuativeCriterion.Existence (Proj.toSpecZero 𝒜) := by
     obtain rfl := Subsingleton.elim x (IsLocalRing.closedPoint K)
     exact hi
   let φ : Spec (.of K) ⟶ _ := IsOpenImmersion.lift _ _ this
+  have H : Spec.preimage i₂ ≫ CommRingCat.ofHom (algebraMap A K) =
+      CommRingCat.ofHom (HomogeneousLocalization.fromZeroRingHom 𝒜 _) ≫ Spec.preimage φ := by
+    apply Spec.map_injective
+    simp only [Spec.map_comp, Spec.map_preimage, ← w.w]
+    rw [← Proj.awayι_toSpecZero, IsOpenImmersion.lift_fac_assoc]
   obtain ⟨x₀, e, he, hxe, φ', hφ, hφ'⟩ :=
-    projective_implies_proper_aux 𝒜 ι x hx i (A := A) (K := K) (Spec.preimage φ) d hd hxd
+    projective_implies_proper_aux 𝒜 (Spec.preimage i₂) ι x hx i (A := A) (K := K)
+    (Spec.preimage φ) H d hd hxd
   let φ'' := lift_of_range_sub_range_of_injective hφ' (IsFractionRing.injective _ _)
   refine ⟨⟨Spec.map (CommRingCat.ofHom φ'') ≫ Proj.awayι 𝒜 _ hxe he, ?_, ?_⟩⟩
   · rw [← Spec.map_comp_assoc]
@@ -300,12 +306,7 @@ lemma foo : ValuativeCriterion.Existence (Proj.toSpecZero 𝒜) := by
     refine (lift_aux_spec hφ' _).trans ?_
     show φ' (map2 _ _ _ (HomogeneousLocalization.fromZeroRingHom 𝒜 _ _)) = _
     rw [map2_fromZeroRingHom, ← map2_fromZeroRingHom 𝒜 hxe, ← RingHom.comp_apply, hφ]
-    show (CommRingCat.ofHom (HomogeneousLocalization.fromZeroRingHom 𝒜 _) ≫
-      Spec.preimage φ) x = (Spec.preimage i₂ ≫ CommRingCat.ofHom (algebraMap A K)) x
-    congr 1
-    apply Spec.map_injective
-    simp only [Spec.map_comp, Spec.map_preimage, ← w.w]
-    rw [← Proj.awayι_toSpecZero, IsOpenImmersion.lift_fac_assoc]
+    exact congr($(H.symm) x)
 
 instance : UniversallyClosed (Proj.toSpecZero 𝒜) := by
   rw [UniversallyClosed.eq_valuativeCriterion]
