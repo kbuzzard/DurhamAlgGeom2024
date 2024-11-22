@@ -111,7 +111,6 @@ theorem HomogeneousLocalization.Away.isLocalization_mul (hd : d ≠ 0) (he : e �
         rw [←Localization.mk_one_eq_algebraMap]
         simp only [Localization.mk_mul, one_mul, v]
         exact Localization.mk_self ⟨f * g, _⟩
-
       rw [Localization.awayLift_mk (hv := hv), Localization.awayLift_mk (hv := hv)]
       simp only [map_pow, ← Localization.mk_one_eq_algebraMap, Localization.mk_pow, one_pow,
         SubmonoidClass.mk_pow, Localization.mk_mul, one_mul, Submonoid.mk_mul_mk, v]
@@ -127,45 +126,35 @@ theorem HomogeneousLocalization.Away.isLocalization_mul (hd : d ≠ 0) (he : e �
       obtain ⟨⟨M, ⟨b, hb⟩, ⟨b, hm⟩, ⟨m, (rfl : _ = b)⟩⟩, rfl⟩ := mk_surjective y
       dsimp at hn hm ⊢
       intro H
-      rw [algebraMap_eq] at H
-      rw [HomogeneousLocalization.ext_iff_val] at H
-      simp [map1] at H
+      rw [algebraMap_eq, HomogeneousLocalization.ext_iff_val] at H
+      simp only [map2_spec', map1, RingHom.coe_comp, Function.comp_apply, algebraMap_apply,
+        val_mk] at H
       let v : Localization.Away (f * g) := Localization.mk g ⟨f * g, Submonoid.mem_powers (f * g)⟩
       have hv : (algebraMap A (Localization.Away (f * g))) f * v = 1 := by
         rw [←Localization.mk_one_eq_algebraMap]
         simp only [Localization.mk_mul, one_mul, v]
         exact Localization.mk_self ⟨f * g, _⟩
-      rw [Localization.awayLift_mk (hv := hv)] at H
-      rw [Localization.awayLift_mk (hv := hv)] at H
-      rw [←Localization.mk_one_eq_algebraMap] at H
-      rw [←Localization.mk_one_eq_algebraMap] at H
-      simp [v, Localization.mk_mul, Localization.mk_pow] at H
-      rw [Localization.mk_eq_mk_iff] at H
-      rw [Localization.r_iff_exists] at H
+      repeat rw [Localization.awayLift_mk (hv := hv), ←Localization.mk_one_eq_algebraMap] at H
+      simp only [Localization.mk_pow, SubmonoidClass.mk_pow, Localization.mk_mul, one_mul, v] at H
+      rw [Localization.mk_eq_mk_iff, Localization.r_iff_exists] at H
       obtain ⟨⟨ _, ⟨k, rfl⟩⟩, H⟩ := H
-      simp only at H
-      -- simp? [← pow_mul] at H
       ring_nf at H
-
       use ⟨_, ⟨k + m + n, rfl⟩⟩
-      simp only
       ext
-      simp [Localization.mk_pow, Localization.mk_mul]
-      rw [Localization.mk_eq_mk_iff]
-      rw [Localization.r_iff_exists]
-      -- set x : ℕ := sorry
+      simp only [val_mul, val_pow, val_mk, Localization.mk_pow, SubmonoidClass.mk_pow,
+        Localization.mk_mul, Submonoid.mk_mul_mk]
+      rw [Localization.mk_eq_mk_iff, Localization.r_iff_exists]
       use 1
-      simp
+      simp only [OneMemClass.coe_one, one_mul]
       rcases e with _|e
       · contradiction
       rcases d with _|d
       · contradiction
       ring_nf
-      simp [← pow_add, ← mul_add] at H ⊢
-      simp [mul_assoc, ← pow_add, ← mul_add] at H ⊢
-      rw [show e * (k + m + n) + k + m * 2 + n = (k + m) + (e * (k + m + n) + m + n) by omega]
-      rw [show e * (k + m + n) + k + m + n * 2 = (k + m) + (e * (k + m + n) + n * 2) by omega]
-      rw [show k + k * d + m + m * d + n + n * d = (k + m + n) + (k * d + m * d + n * d) by omega]
-      rw [pow_add, pow_add g]
-      rw [show ∀ (a b c d e : A), a * b * (c * d * e) = (a * (c * e)) * (b * d) by intros; ring, H]
+      simp only [← pow_add, mul_assoc, ← mul_add] at H ⊢
+      rw [show e * (k + m + n) + k + m * 2 + n = (k + m) + (e * (k + m + n) + m + n) by omega,
+        show e * (k + m + n) + k + m + n * 2 = (k + m) + (e * (k + m + n) + n * 2) by omega,
+        show k + k * d + m + m * d + n + n * d = (k + m + n) + (k * d + m * d + n * d) by omega,
+        pow_add, pow_add g,
+        show ∀ (a b c d e : A), a * b * (c * d * e) = (a * (c * e)) * (b * d) by intros; ring, H]
       ring }
